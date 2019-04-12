@@ -1,7 +1,7 @@
 Select With Update
 ==================
 
-These scripts accompany the blog post, [Technical Note on SKIP LOCKED](https://yaocm.wordpress.com/2019/04/02/technical-note-on-skip-locked). (**Still in DRAFT**)
+These scripts accompany the blog post, [Technical Note on SKIP LOCKED](https://yaocm.wordpress.com/2019/04/13/technical-note-on-skip-locked/). (**Published 2019-04-13**)
 
 Prerequisites
 -------------
@@ -17,3 +17,6 @@ Test Cases
 
 Use the following scripts to create the test cases:
 1. [create_WORKER_ORIGINAL_proc.sql](../blob/master/create_WORKER_ORIGINAL_proc.sql) for the base case.
+1. [create_WORKER_SKIP_LOCKED_1_proc.sql](../blob/master/create_WORKER_SKIP_LOCKED_1_proc.sql) for test case #2 - add SKIP LOCKED from first row.
+1. [create_WORKER_SKIP_LOCKED_4_proc.sql](../blob/master/create_WORKER_SKIP_LOCKED_4_proc.sql) for test case #3 - add SKIP LOCKED from first 4 rows.
+1. [create_WORKER_SKIP_LOCKED_ALL_proc.sql](../blob/master/create_WORKER_SKIP_LOCKED_ALL_proc.sql) for test case #4 - add SKIP LOCKED from all rows.
