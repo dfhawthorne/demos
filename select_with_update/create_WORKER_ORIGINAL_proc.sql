@@ -69,6 +69,7 @@ BEGIN
     -- All rows have been processed - print statistics
     l_end_time := SYSTIMESTAMP;
     CLOSE csr_next_avail;
+    ROLLBACK;
     dbms_output.put_line(
         'Execution on ' || l_terminal_id || ' started at ' ||
         to_char(l_start_time)
