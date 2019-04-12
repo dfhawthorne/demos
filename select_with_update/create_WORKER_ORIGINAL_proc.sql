@@ -5,7 +5,7 @@
 --
 -- -----------------------------------------------------------------------------
 
-CREATE OR REPLACE "DEER"."WORKER_ORIGINAL"(
+CREATE OR REPLACE PROCEDURE "DEER"."WORKER_ORIGINAL"(
     p_client_id     IN VARCHAR2,
     p_delay         IN NUMBER
     )
@@ -28,10 +28,10 @@ IS
               FROM
                 "DEER"."NRIV"
               WHERE
-                  "CLIENT_ID" = p_client_id
+                  "CLIENT" = p_client_id
                 AND
                   "IS_UPDATED" = 'N'
-              FETCH FIRST 1 ROW
+              FETCH FIRST 1 ROW ONLY
           )
       FOR UPDATE
     ;
@@ -51,9 +51,10 @@ IS
         := 0;
         
 BEGIN
-    WHILE TRUE LOOP
-        OPEN CURSOR csr_next_avail;
-        FETCH CURSOR csr_next_avail INTO l_curr_row;
+    LOOP
+        OPEN csr_next_avail;
+        FETCH csr_next_avail INTO l_curr_row;
+        EXIT WHEN csr_next_avail%NOTFOUND;
         l_curr_row."IS_UPDATED"   := 'Y';
         l_curr_row."UPDATED_FROM" := l_terminal_id;
         l_curr_row."UPDATED_TIME" := SYSTIMESTAMP;
@@ -62,28 +63,27 @@ BEGIN
             WHERE CURRENT OF csr_next_avail;
         l_num_processed := l_num_processed + 1;
         dbms_lock.sleep( p_delay );
-        CLOSE CURSOR csr_next_avail;
+        CLOSE csr_next_avail;
         COMMIT;
     END LOOP;
-EXCEPTION
-    WHEN no_data_found THEN
-        l_end_time := SYSTIMESTAMP;
-        CLOSE CURSOR csr_next_avail;
-        dbms_ouput.put_line(
-            'Execution on ' || l_terminal_id || ' started at ' ||
-            to_char(l_start_time)
-            );
-        dbms_ouput.put_line(
-            'Execution ended at ' ||
-            to_char(l_end_time)
-            );
-        dbms_ouput.put_line(
-            to_char(l_num_processed) ||
-            ' rows processed.'
-            );
-        dbms_ouput.put_line(
-            'Execution took ' ||
-            to_char(l_end_time - l_start_time)
-            );
+    -- All rows have been processed - print statistics
+    l_end_time := SYSTIMESTAMP;
+    CLOSE csr_next_avail;
+    dbms_output.put_line(
+        'Execution on ' || l_terminal_id || ' started at ' ||
+        to_char(l_start_time)
+        );
+    dbms_output.put_line(
+        'Execution ended at ' ||
+        to_char(l_end_time)
+        );
+    dbms_output.put_line(
+        to_char(l_num_processed) ||
+        ' rows processed.'
+        );
+    dbms_output.put_line(
+        'Execution took ' ||
+        to_char(l_end_time - l_start_time)
+        );
 END;
 /
