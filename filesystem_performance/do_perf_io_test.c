@@ -31,6 +31,34 @@ do_perf_test(
     const int     verbosity
     )
 {
+    /* ----------------------------------------------------------------------
+     | Start collecting timing information
+     * ---------------------------------------------------------------------- */
+     
+    long clockTicks = sysconf(_SC_CLK_TCK);  /* Clocks per tick for conversion */
+    struct tms start_t;
+    clock_t start_clockTime = clock();
+
+    if (clockTicks == -1)
+    {
+        fprintf(stderr, "sysconf(_SC_CLK_TCK) failed: %m\n");
+        exit(EXIT_FAILURE);
+    }
+    if (start_clockTime  == -1)
+    {
+        fprintf(stderr, "clock() failed: %m\n");
+        exit(EXIT_FAILURE);
+    }
+    if (times(&start_t)  == -1)
+    {
+        fprintf(stderr, "times() failed: %m\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* -----------------------------------------------------------------------
+     | Debugging information and output file variables
+     * ----------------------------------------------------------------------- */
+     
     int     output_fd,
             open_flags;
     mode_t  file_perms;
@@ -105,21 +133,15 @@ do_perf_test(
     |  6. System time in seconds                                               |
     \*------------------------------------------------------------------------*/
     
-    struct tms t;
-    clock_t clockTime = clock();
-    long clockTicks = sysconf(_SC_CLK_TCK);  /* Clocks per tick for conversion */
+    struct tms end_t;
+    clock_t end_clockTime = clock();
     
-    if (clockTicks == -1)
-    {
-        fprintf(stderr, "sysconf(_SC_CLK_TCK) failed: %m\n");
-        exit(EXIT_FAILURE);
-    }
-    if (clockTime  == -1)
+    if (end_clockTime  == -1)
     {
         fprintf(stderr, "clock() failed: %m\n");
         exit(EXIT_FAILURE);
     }
-    if (times(&t)  == -1)
+    if (times(&end_t)  == -1)
     {
         fprintf(stderr, "times() failed: %m\n");
         exit(EXIT_FAILURE);
@@ -128,9 +150,9 @@ do_perf_test(
         buffer_size,
         (open_sync) ? 's' : '-',
         bytes_read,
-        (double) clockTime / CLOCKS_PER_SEC,
-        (double) t.tms_utime / clockTicks,
-        (double) t.tms_stime / clockTicks
+        (double) (end_clockTime   - start_clockTime)   / CLOCKS_PER_SEC,
+        (double) (end_t.tms_utime - start_t.tms_utime) / clockTicks,
+        (double) (end_t.tms_stime - start_t.tms_stime) / clockTicks
         );
 }
 
@@ -144,6 +166,10 @@ main(int argc, char *argv[])
     int opt;
     int verbosity = 0;
     int num_iter = 0;
+    
+    /* CSV Header line */
+    printf("\"Block Size\"\t\"Sync?\"\t\"Num Bytes Read\"\t\"Wall Clock Time\"");
+    printf("\t\"User Time\"\t\"Sys Time\"\n");
     
     while ((opt = getopt(argc, argv, "n:v")) != -1) {
         switch (opt) {
