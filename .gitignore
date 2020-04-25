@@ -102,3 +102,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Executables
+filesystem_performance/do_perf_io_test
+
+# Data and log files
+
+*.dat
+*.log
