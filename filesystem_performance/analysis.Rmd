@@ -1,0 +1,27 @@
+---
+title: "OSYNC and Blocksize Effects on IO Performance"
+author: "Douglas Hawthorne"
+date: "25/04/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+This blog post analyses the performance data produced on a Compaq desktop from the code in [do_perf_io_test.c](https://github.com/dfhawthorne/demos/blob/master/filesystem_performance/do_perf_io_test.c).
+
+## Generate the Results
+
+The following code is used to generate the results used in this analysis:
+```{bash, eval=FALSE}
+./do_perf_io_test -n 5 dummy.dat >compaq_20200424.csv
+```
+
+This will the test five (5) times each for each of the following block sizes:
+* 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
+and for various file sizes.
+
+
