@@ -1,5 +1,5 @@
 ---
-title: "OSYNC and Blocksize Effects on IO Performance"
+title: "O_SYNC and Blocksize Effects on IO Performance"
 author: "Douglas Hawthorne"
 date: "25/04/2020"
 output: html_document
@@ -7,21 +7,208 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+raw_data <- read.csv('c:/Users/user/Documents/demos/filesystem_performance/compaq_20200424.csv',sep="\t")
+raw_data$Sync. <- factor(raw_data$Sync.)
+names(raw_data) <- c('Block_Size', 'Sync', 'Num_Bytes_Read', 'Wall_Clock_Time', 'User_Time', 'Sys_Time')
 ```
 
 ## Overview
 
 This blog post analyses the performance data produced on a Compaq desktop from the code in [do_perf_io_test.c](https://github.com/dfhawthorne/demos/blob/master/filesystem_performance/do_perf_io_test.c).
 
-## Generate the Results
+There are three (3) treatments:
+
+1. Whether the output file is opened with O_SYNC or not (*Sync*);
+2. The size of the I/O buffer used (*Block_Size*);
+3. The size of the output file (*Num_Bytes_Read*).
+
+Three (3) measurements are collected:
+
+1. Wall clock time
+2. Time spent in user mode
+3. Time spent in system mode
+
+## Explanation of O_SYNC
+
+The manual page for [open (2)](http://man7.org/linux/man-pages/man2/open.2.html) says of the O_SYNC flag:
+
+> Write operations on the file will complete according to the requirements of synchronized I/O file integrity completion (by contrast with the synchronized I/O data integrity completion provided by O_DSYNC.)
+>
+> By the time write(2) (or similar) returns, the output data and associated file metadata have been transferred to the underlying hardware (i.e., as though each write(2) was followed by a call to fsync(2)).
+
+## Generate the Test Results
 
 The following code is used to generate the results used in this analysis:
 ```{bash, eval=FALSE}
 ./do_perf_io_test -n 5 dummy.dat >compaq_20200424.csv
 ```
 
-This will the test five (5) times each for each of the following block sizes:
-* 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
+**Note:** This command took over thirty (30) hours to run on my test machine!
+
+This will the test five (5) times each for each of the following block sizes:  
+
+* 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536  
+
 and for various file sizes.
 
+## Summary of Test Results
 
+The test results took about 32.5 hours to generate. The summary of the results is:
+```{r data=raw_data}
+summary(raw_data)
+```
+
+## Relationship Between Measured Times
+
+There were three (3) time metrics collected:
+
+* **Wall_Clock_Time** Elapsed time
+* **User_Time** Time spent in user mode
+* **Sys_Time** Time spent in system mode when the process is executing a function (such as *write*) that requires privileged access (such as writing to a disk)
+
+The times measured includes the following activities:
+
+* Opening output file
+* Allocating and zeroing out a buffer
+* Writing out buffer the required number of times
+* Flushing and closing output file
+
+There is a fourth implied time measurement - that of unaccounted for time $= \text{Wall_Clock_Time} - \text{User_Time} - \text{Sys_Time}$.
+
+### Wall Clock Time versus User Time
+
+The relationship between the wall clock time and the time spent in user mode is somewhat complicated, but shows a general linear realtionship:
+```{r data=raw_data}
+plot(
+  Wall_Clock_Time ~ User_Time,
+  data=raw_data,
+  main='Wall Clock Time vs User Time',
+  xlab='User Time (s)',
+  ylab='Wall Clock Time (s)'
+  )
+```
+
+There are distinct clusters for meaurements of Wall clock time, while the time spent in user mode spread over the full range with a heavy concentration at the lower bound.
+
+The range of values for both response variables cover different ranges (*Wall_Clock_Time* goes up to 32 seconds while *User_Time* only goes up to 1.3 seconds).
+
+### Wall Clock Time versus System Time
+
+The relationship between the wall clock time and the time spent in system mode is somewhat complicated, but shows a general linear realtionship:
+```{r data=raw_data}
+plot(
+  Wall_Clock_Time ~ Sys_Time,
+  data=raw_data,
+  main='Wall Clock Time vs System Time',
+  xlab='System Time (s)',
+  ylab='Wall Clock Time (s)'
+  )
+```
+
+There is almost a perfect relationship between the wall clock time and the time spent in system mode. This should not be unsurprising as the code mainly does a single system call, *write*.
+
+The values for both response variables also cover the same range.
+
+### Reduced Set of Response Variables
+
+We should only consider the response variable, *Sys_Time*, from now on as *Wall_Clock_Time* is highly correlated to the former, and *User_Time* appears to be neglible in comparison.
+
+## Recalibrate Some Treatment Variables
+
+I will recalibrate the block size treatment to be measured in KB, and the size of the output file to be measured in MB:
+```{r}
+raw_data['Block_Size_K'] <- raw_data['Block_Size'] / 1024
+raw_data['File_Size_M'] <- raw_data['Num_Bytes_Read'] / 1024 / 1024
+```
+
+## Effect of Block Size on System Time
+
+I will use a box-plot to get an overview of the effect of the size of the I/O buffer (also known as the block size) on the amount of time spent in system mode.
+
+```{r}
+boxplot(
+  Sys_Time ~ Block_Size_K,
+  data=raw_data,
+  xlab='Size of I/O Buffer (Kb)',
+  ylab='Time Spent in System Mode (s)',
+  main='Effect on System Time from Block Size'
+  )
+```
+
+The plot is deceptive because the categories on the X-axis are on a logarithmic scale. The preponderance of very low values obscures many details.
+
+Now if we plot the y-axis (*Sys_Time*) on a logarithmic scale, the effects on increasing the size of the I/O buffer can be more readily seen:
+```{r}
+boxplot(
+  Sys_Time ~ Block_Size_K,
+  data=raw_data[raw_data$Sys_Time > 0.0, ],
+  xlab='Size of I/O Buffer (Kb)',
+  ylab='Time Spent in System Mode (s)',
+  main='Effect on System Time from Block Size',
+  log='y'
+  )
+```
+
+**Note** Data skew has been introduced for buffer sizes greater than 8 KB because all zero measurements have been excluded. Thus, the plots for 16 KB and up are skewed upwards.
+
+Generally, the use of a larger buffer size results in a reduction in system time (both for maximum and average values).
+
+## Effect on System Time from O_SYNC
+
+The treatment for opening the output file with *O_SYNC* is encoded in the *Sync* treatment variable as follows:
+
+* **s** if the O_SYNC flag is set
+* **-** otherwise
+
+Now if we plot the y-axis (*Sys_Time*) on a logarithmic scale, the effects on increasing the setting of the *O_SYNC* flag can be more readily seen:
+```{r}
+boxplot(
+  Sys_Time ~ Sync,
+  data=raw_data[raw_data$Sys_Time > 0.0, ],
+  xlab='O_SYNC Flag Setting',
+  ylab='Time Spent in System Mode (s)',
+  main='Effect on System Time from O_SYNC',
+  log='y'
+  )
+```
+
+**Note** Data skew has been introduced for the *O_SYNC* flag being unset because all zero measurements have been excluded. Thus, the plot for the *O_SYNC* flag being unset are skewed upwards.
+
+Generally, the use of the *O_SYNC* flag results in a significant increase in system time (both for maximum and average values).
+
+## Effect of Output File Size on System Time
+
+The last treatment variable is the final size of the output file. These treatment levels have been recalibrated to be in MB to make plots easier to read. Again, I will be using a logarithmic Y-Axis.
+
+```{r}
+boxplot(
+  Sys_Time ~ File_Size_M,
+  data=raw_data[raw_data$Sys_Time > 0.0, ],
+  xlab='Size of Output File (MB)',
+  ylab='Time Spent in System Mode (s)',
+  main='Effect on System Time from Size of Output File',
+  log='y'
+  )
+```
+
+**Note** There is skew introduced into the data plotted. All zero measurements have been removed, and thus, the plots are shifted upwards.
+
+This is a complicated graph. It is obvious that the size of the output file is not a simple treatment. Something else is confounded with it. A possible candidate is the number of blocks written.
+
+Here I introduce a new treatment variable called *Blocks_Written* which is calculated from the ratio of the size of the output file (*Num_Bytes_Read*) to the size of the I/O buffer (*Block_SIze*). Then I plot the interaction between *Blocks_Written* and the time spent in system mode (*Sys_Time*) on a logarithmic Y-axis:
+
+```{r}
+raw_data['Blocks_Written'] <- raw_data['Num_Bytes_Read'] / raw_data['Block_Size']
+boxplot(
+  Sys_Time ~ Blocks_Written,
+  data=raw_data[raw_data$Sys_Time > 0.0, ],
+  xlab='Number of Blocks Written',
+  ylab='Time Spent in System Mode (s)',
+  main='Effect on System Time from Number of Writes',
+  log='y'
+  )
+```
+
+**Note:** The data plotted is skewed upwards because all zero measurements were removed from the source data.
+
+**Note** Because of the values chosen for the X-axis, there is, in effect, a logarithmic scale on the X-axis as well. This might indicate that there is a power relationship between *Sys_Time* and *Blocks_Written*. That is, $\text{Sys_Time} = A * \text{Blocks_Written} ^ B$. But the width of the box plots could hide other factors.
