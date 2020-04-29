@@ -36,6 +36,11 @@ The manual page for [open (2)](http://man7.org/linux/man-pages/man2/open.2.html)
 >
 > By the time write(2) (or similar) returns, the output data and associated file metadata have been transferred to the underlying hardware (i.e., as though each write(2) was followed by a call to fsync(2)).
 
+## Terminology
+
+* **Block Size** refers to the amount of data written to disk in a single write call. Depending at which layer this write call happens, the size can vary. These layers include the user program, the file-system driver, and the disk hardware driver. In this analysis, the block size refers to the amount of data passed to the Linux kernel write procedure.
+* **Buffer Size** refers to the size of memory set aside for I/O calls (such as write). In the test program, the buffer is sized to be one (1) block in size.
+
 ## Generate the Test Results
 
 The following code is used to generate the results used in this analysis:
@@ -108,6 +113,8 @@ plot(
 There is almost a perfect relationship between the wall clock time and the time spent in system mode. This should not be unsurprising as the code mainly does a single system call, *write*.
 
 The values for both response variables also cover the same range.
+
+This linear relationship means that any unaccounted for time can be ignored for this analysis.
 
 ### Reduced Set of Response Variables
 
@@ -211,4 +218,46 @@ boxplot(
 
 **Note:** The data plotted is skewed upwards because all zero measurements were removed from the source data.
 
-**Note** Because of the values chosen for the X-axis, there is, in effect, a logarithmic scale on the X-axis as well. This might indicate that there is a power relationship between *Sys_Time* and *Blocks_Written*. That is, $\text{Sys_Time} = A * \text{Blocks_Written} ^ B$. But the width of the box plots could hide other factors.
+**Note:** Because of the values chosen for the X-axis, there is, in effect, a logarithmic scale on the X-axis as well. This might indicate that there is a power relationship between *Sys_Time* and *Blocks_Written*. That is, $\text{Sys_Time} = A * \text{Blocks_Written} ^ B$. But the width of the box plots could hide other factors.
+
+## Problems with Test Program
+
+**Note:** There appears to be an *off-by-one* error with the program to generate the test results. The number of blocks written was expected to be a power of two (2).
+
+**Note:** Future versions of the program will have to present timings with greater granularity than milliseconds.
+
+## What to do with Measurements of Zero (0)?
+
+As noted above in the various logarithmic plots, there are a significant number of measurements of the *Sys_Time* treatment that are zero (0). This means that the actual values are less than 0.5 milliseconds.
+
+I will keep them at this stage and rely on models that use linear combinations of the treatment variables.
+
+## Effect of O_SYNC on the Relationship between Sys_Time and Blocks_Written
+
+I want to get a feel about how the presence and absence of the O_SYNC flag on the behaviour of *Sys_Time* with different levels of *Blocks_Written*.
+
+### Effect on Sys_Time from Blocks_Written without O_SYNC
+
+First, I will want to see what the effect on *Sys_Time* from different levels of *Blocks_Written*  when the *O_SYNC* flag is set:
+```{r}
+boxplot(
+  Sys_Time ~ Blocks_Written,
+  data=raw_data[raw_data$Sync == '-', ],
+  main='Effect on Sys_Time from Blocks_Written without O_SYNC',
+  xlab='Number of Blocks Written',
+  ylab='Time Spent in System Mode (s)'
+  )
+```
+
+### Effect on Sys_Time from Blocks_Written with O_SYNC
+
+Second, I will want to see what the effect on *Sys_Time* from different levels of *Blocks_Written* when the *O_SYNC* flag is set:
+```{r}
+boxplot(
+  Sys_Time ~ Blocks_Written,
+  data=raw_data[raw_data$Sync == 's', ],
+  main='Effect on Sys_Time from Blocks_Written with O_SYNC',
+  xlab='Number of Blocks Written',
+  ylab='Time Spent in System Mode (s)'
+  )
+```
