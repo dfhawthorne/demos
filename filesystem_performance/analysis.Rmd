@@ -14,19 +14,32 @@ names(raw_data) <- c('Block_Size', 'Sync', 'Num_Bytes_Read', 'Wall_Clock_Time', 
 
 ## Overview
 
-This blog post analyses the performance data produced on a Compaq desktop from the code in [do_perf_io_test.c](https://github.com/dfhawthorne/demos/blob/master/filesystem_performance/do_perf_io_test.c).
+This document analyses the performance data produced on a Compaq desktop from the code in [do_perf_io_test.c](https://github.com/dfhawthorne/demos/blob/master/filesystem_performance/do_perf_io_test.c).
 
-There are three (3) treatments:
+## Experimental Design
+
+The experimental design consists of two (2) independent variables with a treatment being the use of the *O_SYNC* flag. Three (3) reponse variables are collected. Each experiment is run five (5) times.
+
+The two (3) independent variables are:
+
+1. The size of the I/O buffer used (*Block_Size*);
+2. The size of the output file (*Num_Bytes_Read*).
+
+The single treatment is:
 
 1. Whether the output file is opened with O_SYNC or not (*Sync*);
-2. The size of the I/O buffer used (*Block_Size*);
-3. The size of the output file (*Num_Bytes_Read*).
 
-Three (3) measurements are collected:
+The three (3) response variables are:
 
-1. Wall clock time
-2. Time spent in user mode
-3. Time spent in system mode
+1. Wall clock time (*Wall_Clock_Time*)
+2. Time spent in user mode (*User_Time*)
+3. Time spent in system mode (*Sys_Time*)
+
+All of these times are measured in seconds to a precision of a millisecond.
+
+There is a relationship between these response variables:
+$\text{Wall_Clock_Time} \ge \text{User_Time} + \text{Sys_Time}$
+
 
 ## Explanation of O_SYNC
 
@@ -39,7 +52,9 @@ The manual page for [open (2)](http://man7.org/linux/man-pages/man2/open.2.html)
 ## Terminology
 
 * **Block Size** refers to the amount of data written to disk in a single write call. Depending at which layer this write call happens, the size can vary. These layers include the user program, the file-system driver, and the disk hardware driver. In this analysis, the block size refers to the amount of data passed to the Linux kernel write procedure.
-* **Buffer Size** refers to the size of memory set aside for I/O calls (such as write). In the test program, the buffer is sized to be one (1) block in size.
+* **Buffer Size** refers to the size of memory set aside for I/O calls (such as write). In the test program, the buffer is sized to be one (1) block.
+* **User Mode** refers to the program running with normal privileges.
+* **System Mode** refers to the program running with elevated priviliges to access key system resources such as a disk drive. The use of the *write* system call causes a transition from user mode to system mode while the data is transferred to internal buffers or to the disk drive, and then back to user mode.
 
 ## Generate the Test Results
 
@@ -58,18 +73,12 @@ and for various file sizes.
 
 ## Summary of Test Results
 
-The test results took about 32.5 hours to generate. The summary of the results is:
+The summary of the results is:
 ```{r data=raw_data}
 summary(raw_data)
 ```
 
 ## Relationship Between Measured Times
-
-There were three (3) time metrics collected:
-
-* **Wall_Clock_Time** Elapsed time
-* **User_Time** Time spent in user mode
-* **Sys_Time** Time spent in system mode when the process is executing a function (such as *write*) that requires privileged access (such as writing to a disk)
 
 The times measured includes the following activities:
 
@@ -82,7 +91,7 @@ There is a fourth implied time measurement - that of unaccounted for time $= \te
 
 ### Wall Clock Time versus User Time
 
-The relationship between the wall clock time and the time spent in user mode is somewhat complicated, but shows a general linear realtionship:
+The relationship between the wall clock time and the time spent in user mode is somewhat complicated, but shows a general linear relationship:
 ```{r data=raw_data}
 plot(
   Wall_Clock_Time ~ User_Time,
@@ -99,7 +108,7 @@ The range of values for both response variables cover different ranges (*Wall_Cl
 
 ### Wall Clock Time versus System Time
 
-The relationship between the wall clock time and the time spent in system mode is somewhat complicated, but shows a general linear realtionship:
+The relationship between the wall clock time and the time spent in system mode is somewhat complicated, but shows a general linear relationship:
 ```{r data=raw_data}
 plot(
   Wall_Clock_Time ~ Sys_Time,
@@ -110,7 +119,7 @@ plot(
   )
 ```
 
-There is almost a perfect relationship between the wall clock time and the time spent in system mode. This should not be unsurprising as the code mainly does a single system call, *write*.
+There is almost a perfect relationship between the wall clock time and the time spent in system mode. This should not be unsurprising as the code mainly does a single system call, *write*, repeatedly.
 
 The values for both response variables also cover the same range.
 
@@ -118,7 +127,7 @@ This linear relationship means that any unaccounted for time can be ignored for 
 
 ### Reduced Set of Response Variables
 
-We should only consider the response variable, *Sys_Time*, from now on as *Wall_Clock_Time* is highly correlated to the former, and *User_Time* appears to be neglible in comparison.
+We should only consider the response variable, *Sys_Time*, from now on as *Wall_Clock_Time* is highly correlated to the former, and *User_Time* appears to be neglible in comparison. This also means that any unaccounted for time can be ignored.
 
 ## Recalibrate Some Treatment Variables
 
@@ -127,6 +136,8 @@ I will recalibrate the block size treatment to be measured in KB, and the size o
 raw_data['Block_Size_K'] <- raw_data['Block_Size'] / 1024
 raw_data['File_Size_M'] <- raw_data['Num_Bytes_Read'] / 1024 / 1024
 ```
+
+This recalibration makes visual analysis much earier.
 
 ## Effect of Block Size on System Time
 
@@ -218,7 +229,7 @@ boxplot(
 
 **Note:** The data plotted is skewed upwards because all zero measurements were removed from the source data.
 
-**Note:** Because of the values chosen for the X-axis, there is, in effect, a logarithmic scale on the X-axis as well. This might indicate that there is a power relationship between *Sys_Time* and *Blocks_Written*. That is, $\text{Sys_Time} = A * \text{Blocks_Written} ^ B$. But the width of the box plots could hide other factors.
+**Note:** Because of the values chosen for the X-axis, there is, in effect, a logarithmic scale on the X-axis as well. This might indicate that there is a power law relationship between *Sys_Time* and *Blocks_Written*. That is, $\text{Sys_Time} = A * \text{Blocks_Written} ^ B$. But the width of the box plots could hide other factors.
 
 ## Problems with Test Program
 
@@ -230,7 +241,7 @@ boxplot(
 
 As noted above in the various logarithmic plots, there are a significant number of measurements of the *Sys_Time* treatment that are zero (0). This means that the actual values are less than 0.5 milliseconds.
 
-I will keep them at this stage and rely on models that use linear combinations of the treatment variables.
+I will keep them at this stage and rely on models that use linear combinations of the treatment variables. Thus, any investigation of a power law relationship between *Sys_Time* and *Blocks_Written* will be ignored for the time being.
 
 ## Effect of O_SYNC on the Relationship between Sys_Time and Blocks_Written
 
@@ -238,7 +249,7 @@ I want to get a feel about how the presence and absence of the O_SYNC flag on th
 
 ### Effect on Sys_Time from Blocks_Written without O_SYNC
 
-First, I will want to see what the effect on *Sys_Time* from different levels of *Blocks_Written*  when the *O_SYNC* flag is set:
+First, I will want to see what the effect on *Sys_Time* from different levels of *Blocks_Written*  without the treatment of the *O_SYNC* flag being set:
 ```{r}
 boxplot(
   Sys_Time ~ Blocks_Written,
@@ -249,9 +260,13 @@ boxplot(
   )
 ```
 
+**Note:** This plot only appears to be exponential because the values on the X-axis are increasing powers of two (2) plus 1. That is, the X-axis is, in effect, logarithmic.
+
+Although there a general relationship between the number of blocks written (*Blocks_Written*) and the time spent in system mode (*Sys_Time*), there is a lot of noise involved. This noise may be caused by the other independent variable (*Block_Size*).
+
 ### Effect on Sys_Time from Blocks_Written with O_SYNC
 
-Second, I will want to see what the effect on *Sys_Time* from different levels of *Blocks_Written* when the *O_SYNC* flag is set:
+Second, I will want to see what the effect on *Sys_Time* from different levels of *Blocks_Written* with the treatment of the *O_SYNC* flag being set:
 ```{r}
 boxplot(
   Sys_Time ~ Blocks_Written,
@@ -261,3 +276,34 @@ boxplot(
   ylab='Time Spent in System Mode (s)'
   )
 ```
+
+**Note:** This plot only appears to be exponential because the values on the X-axis are increasing powers of two (2) plus 1. That is, the X-axis is, in effect, logarithmic.
+
+There a very strong relationship between the number of blocks written (*Blocks_Written*) and the time spent in system mode (*Sys_Time*). Based on the results, I can confidently predict the value of *Sys_Time* based on a given value of *Blocks_Written*. There is very little noise involved.
+
+For the treatment of *O_SYNC*, the effect of the other independent variable (*Block_Size*) can be ignored.
+
+THus, there is a very strong interaction between the treatment (*Sync*) and the two (2) independent variables (*Blocks_Written* and *Block_Size*).
+
+## First Linear Model
+
+Because of the obvious strong interactions noted above, I propose that my first linear model calculate *Sys_Time* on the following factors:
+
+* *Block_Size* (verified visually above)
+* *Blocks_Written* (verified visually above)
+* *Sync* (verified visually above)
+* *Blocks_Written* and *Sync* (verified visually above)
+
+This may result in an overfitted model, but is simple to specify.
+
+```{r}
+first_model <- glm(
+  Sys_Time ~ Block_Size + Blocks_Written * Sync,
+  data=raw_data
+)
+summary(first_model)
+```
+
+The non-zero intercept is unexpected as the number of *write* calls greatly outnumber the other system calls in the measurement period. This model predicts an overhead of about 20 milliseconds with a 95% bounds of 18 and 22 milliseconds.
+
+What was unexpected is the lack of an effect from *block_size* alone.

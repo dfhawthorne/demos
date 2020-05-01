@@ -371,19 +371,28 @@ summary {
 
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>This blog post analyses the performance data produced on a Compaq desktop from the code in <a href="https://github.com/dfhawthorne/demos/blob/master/filesystem_performance/do_perf_io_test.c">do_perf_io_test.c</a>.</p>
-<p>There are three (3) treatments:</p>
+<p>This document analyses the performance data produced on a Compaq desktop from the code in <a href="https://github.com/dfhawthorne/demos/blob/master/filesystem_performance/do_perf_io_test.c">do_perf_io_test.c</a>.</p>
+</div>
+<div id="experimental-design" class="section level2">
+<h2>Experimental Design</h2>
+<p>The experimental design consists of two (2) independent variables with a treatment being the use of the <em>O_SYNC</em> flag. Three (3) reponse variables are collected. Each experiment is run five (5) times.</p>
+<p>The two (3) independent variables are:</p>
 <ol style="list-style-type: decimal">
-<li>Whether the output file is opened with O_SYNC or not (<em>Sync</em>);</li>
 <li>The size of the I/O buffer used (<em>Block_Size</em>);</li>
 <li>The size of the output file (<em>Num_Bytes_Read</em>).</li>
 </ol>
-<p>Three (3) measurements are collected:</p>
+<p>The single treatment is:</p>
 <ol style="list-style-type: decimal">
-<li>Wall clock time</li>
-<li>Time spent in user mode</li>
-<li>Time spent in system mode</li>
+<li>Whether the output file is opened with O_SYNC or not (<em>Sync</em>);</li>
 </ol>
+<p>The three (3) response variables are:</p>
+<ol style="list-style-type: decimal">
+<li>Wall clock time (<em>Wall_Clock_Time</em>)</li>
+<li>Time spent in user mode (<em>User_Time</em>)</li>
+<li>Time spent in system mode (<em>Sys_Time</em>)</li>
+</ol>
+<p>All of these times are measured in seconds to a precision of a millisecond.</p>
+<p>There is a relationship between these response variables: <span class="math inline">\(\text{Wall_Clock_Time} \ge \text{User_Time} + \text{Sys_Time}\)</span></p>
 </div>
 <div id="explanation-of-o_sync" class="section level2">
 <h2>Explanation of O_SYNC</h2>
@@ -398,6 +407,8 @@ summary {
 <ul>
 <li><strong>Block Size</strong> refers to the amount of data written to disk in a single write call. Depending at which layer this write call happens, the size can vary. These layers include the user program, the file-system driver, and the disk hardware driver. In this analysis, the block size refers to the amount of data passed to the Linux kernel write procedure.</li>
 <li><strong>Buffer Size</strong> refers to the size of memory set aside for I/O calls (such as write). In the test program, the buffer is sized to be one (1) block in size.</li>
+<li><strong>User Mode</strong> refers to the program running with normal privileges.</li>
+<li><strong>System Mode</strong> refers to the program running with elevated priviliges to access key system resources such as a disk drive. The use of the <em>write</em> system call causes a transition from user mode to system mode while the data is transferred to internal buffers or to the disk drive, and then back to user mode.</li>
 </ul>
 </div>
 <div id="generate-the-test-results" class="section level2">
