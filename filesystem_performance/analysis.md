@@ -13,12 +13,7 @@ output:
 
 # O_SYNC and Blocksize Effects on IO Performance
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-raw_data <- read.csv('c:/Users/user/Documents/demos/filesystem_performance/compaq_20200424.csv',sep="\t")
-raw_data$Sync. <- factor(raw_data$Sync.)
-names(raw_data) <- c('Block_Size', 'Sync', 'Num_Bytes_Read', 'Wall_Clock_Time', 'User_Time', 'Sys_Time')
-```
+
 
 ## Overview
 
@@ -67,7 +62,8 @@ The manual page for [open (2)](http://man7.org/linux/man-pages/man2/open.2.html)
 ## Generate the Test Results
 
 The following code is used to generate the results used in this analysis:
-```{bash, eval=FALSE}
+
+```bash
 ./do_perf_io_test -n 5 dummy.dat >compaq_20200424.csv
 ```
 
@@ -82,8 +78,26 @@ and for various file sizes.
 ## Summary of Test Results
 
 The summary of the results is:
-```{r data=raw_data}
+
+```r
 summary(raw_data)
+```
+
+```
+##    Block_Size    Sync    Num_Bytes_Read     Wall_Clock_Time     User_Time      
+##  Min.   :  512   -:320   Min.   :  524800   Min.   : 0.0010   Min.   :0.00000  
+##  1st Qu.: 1792   s:320   1st Qu.: 1851776   1st Qu.: 0.0090   1st Qu.:0.00000  
+##  Median : 6144           Median : 6324480   Median : 0.0505   Median :0.00000  
+##  Mean   :16320           Mean   :16728000   Mean   : 0.9139   Mean   :0.03744  
+##  3rd Qu.:20480           3rd Qu.:21020800   3rd Qu.: 0.2607   3rd Qu.:0.02000  
+##  Max.   :65536           Max.   :67174400   Max.   :27.4730   Max.   :1.32000  
+##     Sys_Time      
+##  Min.   : 0.0000  
+##  1st Qu.: 0.0100  
+##  Median : 0.0450  
+##  Mean   : 0.8764  
+##  3rd Qu.: 0.2500  
+##  Max.   :26.3600
 ```
 
 ## Relationship Between Measured Times
@@ -100,7 +114,8 @@ There is a fourth implied time measurement - that of unaccounted for time $= \te
 ### Wall Clock Time versus User Time
 
 The relationship between the wall clock time and the time spent in user mode is somewhat complicated, but shows a general linear relationship:
-```{r data=raw_data}
+
+```r
 plot(
   Wall_Clock_Time ~ User_Time,
   data=raw_data,
@@ -110,6 +125,8 @@ plot(
   )
 ```
 
+![](analysis_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 There are distinct clusters for meaurements of Wall clock time, while the time spent in user mode spread over the full range with a heavy concentration at the lower bound.
 
 The range of values for both response variables cover different ranges (*Wall_Clock_Time* goes up to 32 seconds while *User_Time* only goes up to 1.3 seconds).
@@ -117,7 +134,8 @@ The range of values for both response variables cover different ranges (*Wall_Cl
 ### Wall Clock Time versus System Time
 
 The relationship between the wall clock time and the time spent in system mode is somewhat complicated, but shows a general linear relationship:
-```{r data=raw_data}
+
+```r
 plot(
   Wall_Clock_Time ~ Sys_Time,
   data=raw_data,
@@ -126,6 +144,8 @@ plot(
   ylab='Wall Clock Time (s)'
   )
 ```
+
+![](analysis_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 There is almost a perfect relationship between the wall clock time and the time spent in system mode. This should not be unsurprising as the code mainly does a single system call, *write*, repeatedly.
 
@@ -140,7 +160,8 @@ We should only consider the response variable, *Sys_Time*, from now on as *Wall_
 ## Recalibrate Some Treatment Variables
 
 I will recalibrate the block size treatment to be measured in KB, and the size of the output file to be measured in MB:
-```{r}
+
+```r
 raw_data['Block_Size_K'] <- raw_data['Block_Size'] / 1024
 raw_data['File_Size_M'] <- raw_data['Num_Bytes_Read'] / 1024 / 1024
 ```
@@ -151,7 +172,8 @@ This recalibration makes visual analysis much earier.
 
 I will use a box-plot to get an overview of the effect of the size of the I/O buffer (also known as the block size) on the amount of time spent in system mode.
 
-```{r}
+
+```r
 boxplot(
   Sys_Time ~ Block_Size_K,
   data=raw_data,
@@ -161,10 +183,13 @@ boxplot(
   )
 ```
 
+![](analysis_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 The plot is deceptive because the categories on the X-axis are on a logarithmic scale. The preponderance of very low values obscures many details.
 
 Now if we plot the y-axis (*Sys_Time*) on a logarithmic scale, the effects on increasing the size of the I/O buffer can be more readily seen:
-```{r}
+
+```r
 boxplot(
   Sys_Time ~ Block_Size_K,
   data=raw_data[raw_data$Sys_Time > 0.0, ],
@@ -174,6 +199,8 @@ boxplot(
   log='y'
   )
 ```
+
+![](analysis_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 **Note** Data skew has been introduced for buffer sizes greater than 8 KB because all zero measurements have been excluded. Thus, the plots for 16 KB and up are skewed upwards.
 
@@ -187,7 +214,8 @@ The treatment for opening the output file with *O_SYNC* is encoded in the *Sync*
 * **-** otherwise
 
 Now if we plot the y-axis (*Sys_Time*) on a logarithmic scale, the effects on increasing the setting of the *O_SYNC* flag can be more readily seen:
-```{r}
+
+```r
 boxplot(
   Sys_Time ~ Sync,
   data=raw_data[raw_data$Sys_Time > 0.0, ],
@@ -198,6 +226,8 @@ boxplot(
   )
 ```
 
+![](analysis_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
 **Note** Data skew has been introduced for the *O_SYNC* flag being unset because all zero measurements have been excluded. Thus, the plot for the *O_SYNC* flag being unset are skewed upwards.
 
 Generally, the use of the *O_SYNC* flag results in a significant increase in system time (both for maximum and average values).
@@ -206,7 +236,8 @@ Generally, the use of the *O_SYNC* flag results in a significant increase in sys
 
 The last treatment variable is the final size of the output file. These treatment levels have been recalibrated to be in MB to make plots easier to read. Again, I will be using a logarithmic Y-Axis.
 
-```{r}
+
+```r
 boxplot(
   Sys_Time ~ File_Size_M,
   data=raw_data[raw_data$Sys_Time > 0.0, ],
@@ -217,13 +248,16 @@ boxplot(
   )
 ```
 
+![](analysis_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
 **Note** There is skew introduced into the data plotted. All zero measurements have been removed, and thus, the plots are shifted upwards.
 
 This is a complicated graph. It is obvious that the size of the output file is not a simple treatment. Something else is confounded with it. A possible candidate is the number of blocks written.
 
 Here I introduce a new treatment variable called *Blocks_Written* which is calculated from the ratio of the size of the output file (*Num_Bytes_Read*) to the size of the I/O buffer (*Block_SIze*). Then I plot the interaction between *Blocks_Written* and the time spent in system mode (*Sys_Time*) on a logarithmic Y-axis:
 
-```{r}
+
+```r
 raw_data['Blocks_Written'] <- raw_data['Num_Bytes_Read'] / raw_data['Block_Size']
 boxplot(
   Sys_Time ~ Blocks_Written,
@@ -234,6 +268,8 @@ boxplot(
   log='y'
   )
 ```
+
+![](analysis_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 **Note:** The data plotted is skewed upwards because all zero measurements were removed from the source data.
 
@@ -258,7 +294,8 @@ I want to get a feel about how the presence and absence of the O_SYNC flag on th
 ### Effect on Sys_Time from Blocks_Written without O_SYNC
 
 First, I will want to see what the effect on *Sys_Time* from different levels of *Blocks_Written*  without the treatment of the *O_SYNC* flag being set:
-```{r}
+
+```r
 boxplot(
   Sys_Time ~ Blocks_Written,
   data=raw_data[raw_data$Sync == '-', ],
@@ -268,6 +305,8 @@ boxplot(
   )
 ```
 
+![](analysis_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
 **Note:** This plot only appears to be exponential because the values on the X-axis are increasing powers of two (2) plus 1. That is, the X-axis is, in effect, logarithmic.
 
 Although there a general relationship between the number of blocks written (*Blocks_Written*) and the time spent in system mode (*Sys_Time*), there is a lot of noise involved. This noise may be caused by the other independent variable (*Block_Size*).
@@ -275,7 +314,8 @@ Although there a general relationship between the number of blocks written (*Blo
 ### Effect on Sys_Time from Blocks_Written with O_SYNC
 
 Second, I will want to see what the effect on *Sys_Time* from different levels of *Blocks_Written* with the treatment of the *O_SYNC* flag being set:
-```{r}
+
+```r
 boxplot(
   Sys_Time ~ Blocks_Written,
   data=raw_data[raw_data$Sync == 's', ],
@@ -284,6 +324,8 @@ boxplot(
   ylab='Time Spent in System Mode (s)'
   )
 ```
+
+![](analysis_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 **Note:** This plot only appears to be exponential because the values on the X-axis are increasing powers of two (2) plus 1. That is, the X-axis is, in effect, logarithmic.
 
@@ -304,12 +346,42 @@ Because of the obvious strong interactions noted above, I propose that my first 
 
 This may result in an overfitted model, but is simple to specify.
 
-```{r}
+
+```r
 first_model <- glm(
   Sys_Time ~ Block_Size + Blocks_Written * Sync,
   data=raw_data
 )
 summary(first_model)
+```
+
+```
+## 
+## Call:
+## glm(formula = Sys_Time ~ Block_Size + Blocks_Written * Sync, 
+##     data = raw_data)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -0.56207  -0.05717  -0.01218   0.00946   0.65153  
+## 
+## Coefficients:
+##                        Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)           2.021e-02  7.698e-03   2.625 0.008879 ** 
+## Block_Size           -2.265e-07  2.124e-07  -1.066 0.286673    
+## Blocks_Written        1.079e-06  3.083e-07   3.500 0.000498 ***
+## Syncs                 6.859e-02  9.342e-03   7.342 6.48e-13 ***
+## Blocks_Written:Syncs  2.010e-04  4.276e-07 469.948  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.01203032)
+## 
+##     Null deviance: 5845.9147  on 639  degrees of freedom
+## Residual deviance:    7.6393  on 635  degrees of freedom
+## AIC: -1005.8
+## 
+## Number of Fisher Scoring iterations: 2
 ```
 
 The non-zero intercept is unexpected as the number of *write* calls greatly outnumber the other system calls in the measurement period. This model predicts an overhead of about 20 milliseconds with a 95% bounds of 18 and 22 milliseconds.
@@ -319,7 +391,8 @@ What was unexpected is the lack of an effect from *Block_Size* alone. However on
 ## Second Linear Model
 
 I now revise the first linear model to exclude the *Block_Size* variable:
-```{r}
+
+```r
 second_model <- glm(
   Sys_Time ~ Blocks_Written * Sync,
   data=raw_data
@@ -327,4 +400,29 @@ second_model <- glm(
 summary(second_model)
 ```
 
-With this revised model, it looks like the intercept can be set to zero (0).
+```
+## 
+## Call:
+## glm(formula = Sys_Time ~ Blocks_Written * Sync, data = raw_data)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -0.56634  -0.05826  -0.01219   0.01138   0.65377  
+## 
+## Coefficients:
+##                       Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)          1.599e-02  6.607e-03   2.420 0.015780 *  
+## Blocks_Written       1.143e-06  3.024e-07   3.779 0.000172 ***
+## Syncs                6.859e-02  9.343e-03   7.341  6.5e-13 ***
+## Blocks_Written:Syncs 2.010e-04  4.277e-07 469.898  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.01203291)
+## 
+##     Null deviance: 5845.9147  on 639  degrees of freedom
+## Residual deviance:    7.6529  on 636  degrees of freedom
+## AIC: -1006.6
+## 
+## Number of Fisher Scoring iterations: 2
+```
