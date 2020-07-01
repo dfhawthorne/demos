@@ -1,14 +1,14 @@
 ---
 title:               "O_SYNC and Blocksize Effects on IO Performance"
 author:              "Douglas Hawthorne"
-date:                "25/04/2020"
+date:                "16/05/2020"
 output:
   html_document:
     toc:             true
     toc_float:       false
     number_sections: true
     keep_md:         true
-    fig_caption:     true
+    fig_caption:     false
 ---
 
 # O_SYNC and Blocksize Effects on IO Performance
@@ -18,6 +18,10 @@ output:
 ## Overview
 
 This document analyses the performance data produced on a Compaq desktop from the code in [do_perf_io_test.c](https://github.com/dfhawthorne/demos/blob/master/filesystem_performance/do_perf_io_test.c).
+
+As expected, the use of the *O_SYNC* flag increases the I/O response time from about 1 microsecond per block written to about 200 microseconds with an overhead of about $69 \pm 28$ milliseconds.
+
+There are data collection issues that should be corrected in a more refined version of this experiment.
 
 ## Experimental Design
 
@@ -30,7 +34,7 @@ The two (3) independent variables are:
 
 The single treatment is:
 
-1. Whether the output file is opened with O_SYNC or not (*Sync*);
+1. Whether the output file is opened with *O_SYNC* or not (*Sync*);
 
 The three (3) response variables are:
 
@@ -60,6 +64,14 @@ The manual page for [open (2)](http://man7.org/linux/man-pages/man2/open.2.html)
 * **System Mode** refers to the program running with elevated priviliges to access key system resources such as a disk drive. The use of the *write* system call causes a transition from user mode to system mode while the data is transferred to internal buffers or to the disk drive, and then back to user mode.
 
 ## Generate the Test Results
+
+The code can be found in [do_perf_io_test.c](https://github.com/dfhawthorne/demos/blob/master/filesystem_performance/do_perf_io_test.c). To download and compile the code, do the following:
+
+```bash
+git clone https://github.com/dfhawthorne/demos
+cd demos/filesystem_performance
+make
+```
 
 The following code is used to generate the results used in this analysis:
 
@@ -125,7 +137,7 @@ plot(
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+![](analysis_files/figure-html/wall_clock_time_vs_user_time-1.png)
 
 There are distinct clusters for meaurements of Wall clock time, while the time spent in user mode spread over the full range with a heavy concentration at the lower bound.
 
@@ -145,7 +157,7 @@ plot(
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+![](analysis_files/figure-html/wall_clock_time_vs_system_time-1.png)
 
 There is almost a perfect relationship between the wall clock time and the time spent in system mode. This should not be unsurprising as the code mainly does a single system call, *write*, repeatedly.
 
@@ -179,11 +191,11 @@ boxplot(
   data=raw_data,
   xlab='Size of I/O Buffer (Kb)',
   ylab='Time Spent in System Mode (s)',
-  main='Effect on System Time from Block Size'
+  main='Effect of Block Size on System Time'
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+![Effect of Block Size  (kb) on System Time (s)](analysis_files/figure-html/effect_of_blksize_on_system_time-1.png)
 
 The plot is deceptive because the categories on the X-axis are on a logarithmic scale. The preponderance of very low values obscures many details.
 
@@ -195,18 +207,18 @@ boxplot(
   data=raw_data[raw_data$Sys_Time > 0.0, ],
   xlab='Size of I/O Buffer (Kb)',
   ylab='Time Spent in System Mode (s)',
-  main='Effect on System Time from Block Size',
+  main='Effect of Block Size on System Time',
   log='y'
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+![Effect of Block Size on System Time - Logarithmic scale](analysis_files/figure-html/effect_of_block_size_on_log_system_time-1.png)
 
 **Note** Data skew has been introduced for buffer sizes greater than 8 KB because all zero measurements have been excluded. Thus, the plots for 16 KB and up are skewed upwards.
 
 Generally, the use of a larger buffer size results in a reduction in system time (both for maximum and average values).
 
-## Effect on System Time from O_SYNC
+## Effect of O_SYNC on System Time
 
 The treatment for opening the output file with *O_SYNC* is encoded in the *Sync* treatment variable as follows:
 
@@ -226,7 +238,7 @@ boxplot(
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![](analysis_files/figure-html/effect_of_osync_on_system_time-1.png)
 
 **Note** Data skew has been introduced for the *O_SYNC* flag being unset because all zero measurements have been excluded. Thus, the plot for the *O_SYNC* flag being unset are skewed upwards.
 
@@ -248,7 +260,7 @@ boxplot(
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+![](analysis_files/figure-html/effect_of_output_file_size_on_system_time-1.png)
 
 **Note** There is skew introduced into the data plotted. All zero measurements have been removed, and thus, the plots are shifted upwards.
 
@@ -269,7 +281,7 @@ boxplot(
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](analysis_files/figure-html/effect_of_blocks_written_on_system_time-1.png)
 
 **Note:** The data plotted is skewed upwards because all zero measurements were removed from the source data.
 
@@ -305,7 +317,7 @@ boxplot(
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](analysis_files/figure-html/effect_on_sys_time_from_blks_written_no_osync-1.png)
 
 **Note:** This plot only appears to be exponential because the values on the X-axis are increasing powers of two (2) plus 1. That is, the X-axis is, in effect, logarithmic.
 
@@ -325,7 +337,7 @@ boxplot(
   )
 ```
 
-![](analysis_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+![](analysis_files/figure-html/effect_on_sys_time_from_blks_written_with_osync-1.png)
 
 **Note:** This plot only appears to be exponential because the values on the X-axis are increasing powers of two (2) plus 1. That is, the X-axis is, in effect, logarithmic.
 
@@ -426,3 +438,11 @@ summary(second_model)
 ## 
 ## Number of Fisher Scoring iterations: 2
 ```
+
+With this revised model, it looks like the intercept can be set to zero (0) at the one (1) percent level of significance. However because of data collection issues noted about, I will not proceed with any further model refinement.
+
+This model gives the following results:
+
+* There is an overhead of $69 \pm 28$ milliseconds when using the *O_SYNC* flag;
+* The average I/O response of writing a single block without the *O_SYNC* flag is about one (1) microsecond; and
+* The average I/O response of writing a single block with the *O_SYNC* flag is about 200 microseconds.
