@@ -1,0 +1,28 @@
+---
+# Configures all hosts in the local inventory to run the performance test
+
+- hosts:             all
+  tasks:
+
+
+    # --------------------- Install GIT
+
+    - name:                 "Install GIT"
+      yum:
+        name:               git
+        state:              latest
+      become:               yes
+      become_user:          root
+      when:                 ansible_distribution == "OracleLinux"
+      tags:                 install_git
+
+    # --------------------- Get latest version of Demonstration Scripts from repository
+
+    - name:                 "Get latest version of Demonstration Scripts from repository using HTTPS"
+      git:
+        repo:               "https://github.com/dfhawthorne/demos.git"
+        dest:               "~/demos"
+        clone:              "yes"
+        update:             "yes"
+
+...
