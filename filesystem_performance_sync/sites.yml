@@ -4,25 +4,47 @@
 - hosts:             all
   tasks:
 
+    # --------------------- Install Required Packages
 
-    # --------------------- Install GIT
-
-    - name:                 "Install GIT"
-      yum:
-        name:               git
+    - name:                 "Install Required Packages"
+      ansible.builtin.yum:
+        name:
+          -                 git
+          -                 make
+          -                 gcc
         state:              latest
       become:               yes
       become_user:          root
       when:                 ansible_distribution == "OracleLinux"
-      tags:                 install_git
 
     # --------------------- Get latest version of Demonstration Scripts from repository
 
     - name:                 "Get latest version of Demonstration Scripts from repository using HTTPS"
-      git:
+      ansible.builtin.git:
         repo:               "https://github.com/dfhawthorne/demos.git"
         dest:               "~/demos"
         clone:              "yes"
         update:             "yes"
 
+    # --------------------- Create any missing loopback devices (0-7)
+
+    - name:                 "Create any missing loopback devices"
+      ansible.builtin.command:
+        argv:
+          -                 mknod
+          -                 "/dev/loop{{ item }}"
+          -                 b
+          -                 7
+          -                 "{{ item }}"
+        creates:            "/dev/loop{{ item }}"
+      loop:                 "{{ range(0,8,1)|list }}"
+      become:               yes
+      become_user:          root
+
+    # --------------------- Build the program and run the tests
+
+    - name:                 "Build the program and run the tests"
+      community.general.make:
+        chdir:              "~/demos/filesystem_performance_sync"
+        target:             all
 ...
