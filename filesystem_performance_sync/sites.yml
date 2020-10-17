@@ -1,6 +1,10 @@
 ---
 # Configures all hosts in the local inventory to run the performance test
 #
+# ROOT access is required!
+#
+# All loop back devices will be unmounted!
+#
 # WARNING:
 # (1) This script contains hard-coded values:
 # (1.1) Number of loop-back devices is set to 4
@@ -117,6 +121,7 @@
       ansible.builtin.command:
         argv:
           -                 mkfs.ext2
+          -                 "-F"                # force re-creation of file system
           -                 /dev/loop0
       become:               yes
       become_user:          root
@@ -125,6 +130,7 @@
       ansible.builtin.command:
         argv:
           -                 mkfs.ext3
+          -                 "-F"                # force re-creation of file system
           -                 /dev/loop1
       become:               yes
       become_user:          root
@@ -133,6 +139,7 @@
       ansible.builtin.command:
         argv:
           -                 mkfs.ext4
+          -                 "-F"                # force re-creation of file system
           -                 /dev/loop2
       become:               yes
       become_user:          root
@@ -141,6 +148,7 @@
       ansible.builtin.command:
         argv:
           -                 mkfs.xfs
+          -                 "-f"                # force re-creation of file system
           -                 /dev/loop3
       become:               yes
       become_user:          root

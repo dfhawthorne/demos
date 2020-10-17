@@ -11,6 +11,14 @@ This demonstration expands on the one done in _FILESYTEM PERFORMANCE_ by adding:
 1. Use of [Ansible](https://www.ansible.com/) to set up and run tests
 1. Use of multiple file system types
 
+Warnings
+--------
+
+These scripts should __ONLY__ be run on __TEST__ machines as the scripts:
+1. Required __ROOT__ access
+1. Unmount __ALL__ loop-back devices
+1. Installs additional software
+
 Configuration
 -------------
 
@@ -25,3 +33,12 @@ ansible-playbook -K sites.yml
 ```
 
 You will be then prompted for your password for the remote servers.
+
+Tests Done
+----------
+
+Currently, only four (4) file system types are tested:
+1. EXT2
+1. EXT3
+1. EXT4
+1. XFS
