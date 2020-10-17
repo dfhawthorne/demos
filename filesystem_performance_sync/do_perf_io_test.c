@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-static void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     exit(0);
 }
