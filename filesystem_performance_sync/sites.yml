@@ -1,8 +1,24 @@
 ---
 # Configures all hosts in the local inventory to run the performance test
+#
+# WARNING:
+# (1) This script contains hard-coded values:
+# (1.1) Number of loop-back devices is set to 4
+# (1.2) Location of test files is in the user's home directory
+# (1.3) Number of file system image files created is 4
+# (2) This script is tested against OEL8.1
+# (3) This script is for Ansible 2.10
+# (4) The file systems are reformatted everytime the script runs
 
 - hosts:             all
   tasks:
+
+    # --------------------- Set global variables
+
+    - name:                 "Set Global Variables"
+      ansible.builtin.set_fact:
+        test_dir:           /home/douglas/test_dir
+        git_dir:            /home/douglas/demos
 
     # --------------------- Install Required Packages
 
@@ -15,29 +31,127 @@
         state:              latest
       become:               yes
       become_user:          root
-      when:                 ansible_distribution == "OracleLinux"
 
     # --------------------- Get latest version of Demonstration Scripts from repository
 
     - name:                 "Get latest version of Demonstration Scripts from repository using HTTPS"
       ansible.builtin.git:
         repo:               "https://github.com/dfhawthorne/demos.git"
-        dest:               "~/demos"
-        clone:              "yes"
-        update:             "yes"
+        dest:               "{{ git_dir }}"
+        clone:              yes
+        update:             yes
 
-    # --------------------- Create any missing loopback devices (0-7)
+    # --------------------- Create any missing loopback devices (0-3)
 
     - name:                 "Create any missing loopback devices"
       ansible.builtin.command:
         argv:
           -                 mknod
           -                 "/dev/loop{{ item }}"
-          -                 b
-          -                 7
-          -                 "{{ item }}"
+          -                 b                         # block device
+          -                 7                         # major node
+          -                 "{{ item }}"              # minor node
         creates:            "/dev/loop{{ item }}"
-      loop:                 "{{ range(0,8,1)|list }}"
+      loop:                 "{{ range(0,4,1)|list }}"
+      become:               yes
+      become_user:          root
+
+    # --------------------- Create test directory (test_fs in your home directory) and
+    #                       file system images with mount points
+
+    - name:                 "Create test directory"
+      ansible.builtin.file:
+        path:               "{{ test_dir }}"
+        state:              directory
+
+    - name:                 "Create mount points"
+      ansible.builtin.file:
+        path:               "{{ test_dir }}/mp{{ item }}"
+        state:              directory
+      loop:                 "{{ range(0,4,1)|list }}"
+
+    - name:                 "Create file system images"
+      ansible.builtin.command:
+        argv:
+          -                 dd
+          -                 if=/dev/zero
+          -                 "of={{ test_dir }}/fs_img{{ item }}.dat"
+          -                 bs=1M
+          -                 count=1024
+        creates:            "{{ test_dir }}/fs_img{{ item }}.dat"
+      loop:                 "{{ range(0,4,1)|list }}"
+
+    - name:                 "Detach all associated loop devices"
+      ansible.builtin.command:
+        argv:               
+          -                 losetup
+          -                 "-D"
+      become:               yes
+      become_user:          root
+
+    - name:                 "Mount file system images on loop-back devices"
+      ansible.builtin.command:
+        argv:
+          -                 losetup
+          -                 "/dev/loop{{ item }}"
+          -                 "{{ test_dir }}/fs_img{{ item }}.dat"
+      loop:                 "{{ range(0,4,1)|list }}"
+      become:               yes
+      become_user:          root
+
+    - name:                 "List loop back mappings"
+      ansible.builtin.command:
+        argv:
+          -                 losetup
+          -                 "--list"
+      register:             losetup
+      changed_when:         false                # only gets info
+      become:               yes
+      become_user:          root
+
+    - name:                 "Show loop back mappings"
+      ansible.builtin.debug:
+        var:                losetup.stdout_lines
+
+    - name:                 "Format /dev/loop0 as ext2"
+      ansible.builtin.command:
+        argv:
+          -                 mkfs.ext2
+          -                 /dev/loop0
+      become:               yes
+      become_user:          root
+
+    - name:                 "Format /dev/loop1 as ext3"
+      ansible.builtin.command:
+        argv:
+          -                 mkfs.ext3
+          -                 /dev/loop1
+      become:               yes
+      become_user:          root
+
+    - name:                 "Format /dev/loop2 as ext4"
+      ansible.builtin.command:
+        argv:
+          -                 mkfs.ext4
+          -                 /dev/loop2
+      become:               yes
+      become_user:          root
+
+    - name:                 "Format /dev/loop3 as xfs"
+      ansible.builtin.command:
+        argv:
+          -                 mkfs.xfs
+          -                 /dev/loop3
+      become:               yes
+      become_user:          root
+
+    - name:                 "Mount the file system images"
+      ansible.builtin.command:
+        argv:
+          -                 mount
+          -                 "/dev/loop{{ item }}"
+          -                 "{{ test_dir }}/mp{{ item }}"
+      loop:                 "{{ range(0,4,1)|list }}"
       become:               yes
       become_user:          root
 
@@ -45,6 +159,6 @@
 
     - name:                 "Build the program and run the tests"
       community.general.make:
-        chdir:              "~/demos/filesystem_performance_sync"
+        chdir:              "{{ git_dir }}/filesystem_performance_sync"
         target:             all
 ...
