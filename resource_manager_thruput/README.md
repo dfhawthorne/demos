@@ -10,7 +10,7 @@ The previous investigation concentrated on showing the scheduling effect of havi
 
 The [AWR Difference Report](https://github.com/dfhawthorne/demos/blob/master/high_cpu_and_cdb_resource_plans/awr_diff_report_172_173_179_180.html) showed:
 | Resource Plan | Avg Active Users | Elapsed Time (min) | DB time (min) |
-| ------------- | ---------------- | ------------------:| -------------:|
+| ------------- | ----------------:| ------------------:| -------------:|
 | None          |              4.9 |               16.0 |          77.9 |
 | JAR\_CDB\_PLAN |             4.8 |               14.1 |          67.6 |
 | %Diff         |             -1.2 |              -12.2 |         -13.2 |
