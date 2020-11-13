@@ -1,0 +1,13 @@
+---
+# ------------------------------------------------------------------------------
+# Shut down multiple hosts
+# ------------------------------------------------------------------------------
+- hosts:
+    -                   hammer.yaocm.id.au
+    -                   dural.yaocm.id.au
+  tasks:
+    - name:             "Shutdown host"
+      command:          shutdown -h now
+      become:           yes
+      become_user:      root
+...
