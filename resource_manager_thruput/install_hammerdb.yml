@@ -1,0 +1,213 @@
+---
+- name:                 "Set Up HammerDB Server"
+  hosts:                hammer.yaocm.id.au
+  tasks:
+  
+  # ------------------- Install extra packages
+  #                     (see https://hammerdb.com/docs/ch01s02.html)
+  
+  - name:               "Verify OS Distribution"
+    fatal:
+      msg:              "Incorrect OS Distribution"
+    when:               ansible_distribution != "OracleLinux" or ansible_distribution_major_version <= '6'
+
+  
+  - name:               "Remove Old Packages"
+    yum:
+      name:
+      - pexpect
+      state:            absent
+    become:             yes
+    become_user:        root
+
+  - name:               "Install Extra Packages"
+    yum:
+      name:
+      - nscd
+      - git
+      - python-setuptools
+      - libXft
+      state:            latest
+    become:             yes
+    become_user:        root
+
+  - name:               "Install PIP"
+    easy_install:
+      name:             pip
+      state:            latest
+    become:             yes
+    become_user:        root
+    
+  - name:               "Install PEXPECT using PIP"
+    pip:
+      name:             pexpect
+      status:           latest
+    become:             yes
+    become_user:        root
+    
+  # ------------------- Create Groups and Users
+  
+  - name:               "Create Groups"
+    group:
+      name:
+      - oinstall
+      - hammer
+      - oracle
+      state:            present
+    become:             yes
+    become_user:        root
+  
+  - name:               "Create Users"
+    user:
+      create_home:      yes
+      generate_ssh_key: yes
+      group:            "{{ item.group }}"
+      groups:           "{{ item.groups }}"
+      home:             "{{ item.home }}"
+      name:             "{{ item.name }}"
+      shell:            /sbin/nologin
+      state:            present
+    with_items:
+      - { name: oracle, group: oinstall, groups: "oracle", home: "/home/oracle" }
+      - { name: hammer, group: hammer, groups: "", home: "/home/hammer" }
+    become:             yes
+    become_user:        root
+
+  # ------------------- Download Linux installer
+  #                     (see https://hammerdb.com/docs/ch01s03.html)
+  
+  - name:               "Download Linux Installer for HammerDB"
+    get_url:
+      url:              "https://github.com/TPC-Council/HammerDB/releases/download/v3.3/HammerDB-3.3-Linux-x86-64-Install"
+      dest:             /home/hammer
+      checksum:         sha1:1aed3d97256c1e22b56cd9d1e5d95fd7d28a1bad
+    become:             yes
+    become_user:        hammer
+      
+  # -------------------- Install HammerDB
+  #                      (see https://www.hammerdb.com/docs/ch01s05.html)
+  
+  - name:                "Install HammerDB"
+    expect:
+      command:           "/home/hammer/HammerDB-3.3-Linux-x86-64-Install"
+      responses:
+        "This will install HammerDB on your computer. Continue? [n/Y]": "Y"
+        "Where do you want to install HammerDB? [/usr/local/HammerDB-3.3]": ""
+      creates:            "/usr/local/HammerDB-3.3"
+    become:               yes
+    become_user:          root
+
+  # ------------------------------------------------------------------------------
+  # Create the minimal installation directories needed to install Oracle Client.
+  #
+  # The ownership of these directories is set to oracle and its installation
+  #   group. This is to be done ONLY ONCE as the root scripts change the
+  #   persmissions later during software installation.
+  # ------------------------------------------------------------------------------
+
+  # --------------------- Created the directories needed for installation
+
+  - name:                 "Created the directories needed for installation"
+    include_role:
+      name:               common
+      tasks_from:         add_new_install_dir.yml
+    loop:
+      -                   "{{ oracle_vars.inventory_location | dirname }}"
+      -                   "{{ oracle_vars.oracle_base }}"
+    loop_control:
+      loop_var:           install_dir
+        
+  # =============================================================================
+  # Install Oracle Client 12.1.0.2 Software Only:
+  # (1) Create response file for silent installation
+  # (2) Install Oracle Client 12.1.0.2 Software Only in Silent Mode
+  # (3) Run root scripts
+  # =============================================================================
+
+  - name:                 "Set Facts for installation of Client Software"
+    set_fact:
+      response_file:      "{{ oracle_vars.oracle_base }}/client_install.rsp"
+
+  # --------------------- Create response file for silent installation
+
+  - name:                 "Create response file for silent installation"
+    template:
+      src:                "client_install.rsp"
+      dest:               "{{ response_file }}"
+    vars:
+      install_option:     "Administrator"
+    become:               yes
+    become_user:          oracle
+
+  # --------------------- Install Oracle Client 12.1.0.2 Software Only in Silent Mode
+  - name:                 "Install Oracle Client 12.1.0.2 Software Only in Silent Mode"
+    command:              "{{ client_installer_loc }}/runInstaller -silent -noconfig -responseFile {{ response_file }} -waitforcompletion -ignorePrereq"
+    args:
+      chdir:              "{{ client_installer_loc }}"
+      creates:            "{{ oracle_vars.oracle_home }}/*"
+      register:             client_sw_install_result
+    become:               yes
+    become_user:          oracle
+
+  - name:                 "output from Install Oracle Client 12.1.0.2 Software Only in Silent Mode"
+    debug:
+      var:                client_sw_install_result.stdout_lines
+      verbosity:          0
+
+  # --------------------- Run root scripts
+
+  - name:                 "Run orainstRoot.sh after Oracle Client 12.1.0.2 Software Installation"
+    command:              "{{ oracle_vars.inventory_location }}/orainstRoot.sh"
+    register:             orainstRoot
+    when:                 client_sw_install_result.stdout is search('/orainstRoot.sh')
+    become:               yes
+    become_user:          root
+
+  - name:                 "Output from orainstRoot.sh script"
+    debug:
+      var:                orainstRoot.stdout_lines
+      verbosity:          0
+    when:                 orainstRoot.stdout_lines is defined
+
+  # --------------------- Configure all tools
+
+  - name:                 "Run configToolAllCommands after Oracle Client 12.1.0.2 Software Installation"
+    command:              "/bin/sh {{ oracle_vars.oracle_home }}/cfgtoollogs/configToolAllCommands"
+    register:             configToolAllCommands
+    when:                 client_sw_install_result.stdout is search('/cfgtoollogs/configToolAllCommands')
+    become:               yes
+    become_user:          oracle
+
+  - name:                 "Output from configToolAllCommands script"
+    debug:
+      var:                configToolAllCommands.stdout_lines
+      verbosity:          0
+    when:                 configToolAllCommands.stdout_lines is defined
+
+  # ------------------------------------------------------------------------------
+  # Creates and maintains the TNSNAMES file for data guard
+  #
+  # The variable 'tnsnames' must be defined
+  # ------------------------------------------------------------------------------
+        
+  - name:                 "Set path of TNSNAMES file"
+    set_fact:
+      tnsnames:           "{{ oracle_vars.oracle_home }}/network/admin/tnsnames.ora"
+
+  # --------------------- Add aliases for DEMO database
+
+  - name:                 "Add DEMO_DURAL alias to TNSNAMES file"
+    lineinfile:
+      create:             "yes"
+      group:              "{{ oracle_user.install_group.name }}"
+      mode:               0644
+      owner:              "oracle"
+      path:               "{{ tnsnames }}"
+      regexp:             '^DEMO_DURAL\s*=\s*'
+      line:               "DEMO_DURAL=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dural.yaocm.id.au)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=demo_dural.yaocm.id.au)))"
+      insertbefore:       EOF
+    become:               yes
+    become_user:          oracle
+
+...
+      
