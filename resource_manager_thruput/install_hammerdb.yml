@@ -5,6 +5,7 @@
 
   - name:               "Set global variables"
     set_fact:
+      software_nfs_loc: "/opt/share/Software"
       client_installer_loc:
                         "/opt/share/Software/database/linuxamd64_12102/client"
       hammerdb_home:    "/home/hammer"
@@ -38,6 +39,9 @@
       - nscd
       - git
       - libXft
+      - nfs-utils
+      - libnsl
+      - tcl
       state:            latest
     become:             yes
     become_user:        root
@@ -60,7 +64,6 @@
     with_items:
     - "{{ install_group }}"
     - hammer
-    - oracle
   
   - name:               "Create Users"
     user:
@@ -84,21 +87,22 @@
       url:              "https://github.com/TPC-Council/HammerDB/releases/download/v3.3/HammerDB-3.3-Linux-x86-64-Install"
       dest:             "{{ hammerdb_home }}"
       checksum:         sha1:1aed3d97256c1e22b56cd9d1e5d95fd7d28a1bad
+      mode:             "a+rx"
     become:             yes
     become_user:        hammer
       
   # -------------------- Install HammerDB
   #                      (see https://www.hammerdb.com/docs/ch01s05.html)
   
-  - name:                "Install HammerDB"
+  - name:               "Install HammerDB"
     expect:
-      command:           "{{ hammerdb_home }}/HammerDB-3.3-Linux-x86-64-Install"
+      command:          "{{ hammerdb_home }}/HammerDB-3.3-Linux-x86-64-Install"
       responses:
-        "This will install HammerDB on your computer. Continue? [n/Y]": "Y"
-        "Where do you want to install HammerDB? [/usr/local/HammerDB-3.3]": "{{ hammerdb_loc }}"
-      creates:            "{{ hammerdb_loc }}"
-    become:               yes
-    become_user:          root
+        "Continue":     "Y"
+        "Where":        "{{ hammerdb_loc }}"
+      creates:          "{{ hammerdb_loc }}"
+    become:             yes
+    become_user:        root
 
   # ------------------------------------------------------------------------------
   # Create the minimal installation directories needed to install Oracle Client.
@@ -108,16 +112,35 @@
   #   persmissions later during software installation.
   # ------------------------------------------------------------------------------
 
-  # --------------------- Created the directories needed for installation
+  # ------------------- Create NFS mount point for Oracle Software
 
-  - name:                 "Created the directories needed for installation"
+  - name:               "Create Mount Point for Oracle Installation Software"
     file:
-      path:               "{{ oracle_base }}"
-      owner:              oracle
-      group:              "{{ install_group }}"
-      state:              directory
-    become:               yes
-    become_user:          root
+      path:             "{{ software_nfs_loc }}"
+      state:            directory
+    become:             yes
+    become_user:        root
+
+  - name:               "Mount NFS Share for Oracle Installation Software"
+    mount:
+      path:             "{{ software_nfs_loc }}"
+      src:              narrabri.yaocm.id.au:/data/Software
+      fstype:           nfs4
+      opts:             ro,bg,hard,nointr,rsize=32768,wsize=32768,tcp,vers=4,timeo=600
+      state:            mounted
+    become:             yes
+    become_user:        root
+
+  # ------------------- Create the directories needed for installation
+
+  - name:               "Create the directories needed for installation"
+    file:
+      path:             "{{ oracle_base }}"
+      owner:            oracle
+      group:            "{{ install_group }}"
+      state:            directory
+    become:             yes
+    become_user:        root
         
   # =============================================================================
   # Install Oracle Client 12.1.0.2 Software Only:
@@ -126,66 +149,78 @@
   # (3) Run root scripts
   # =============================================================================
 
-  - name:                 "Set Facts for installation of Client Software"
+  - name:               "Set Facts for installation of Client Software"
     set_fact:
-      response_file:      "{{ oracle_base }}/client_install.rsp"
+      response_file:    "{{ oracle_base }}/client_install.rsp"
 
-  # --------------------- Create response file for silent installation
+  # ------------------- Create response file for silent installation
 
-  - name:                 "Create response file for silent installation"
+  - name:               "Create response file for silent installation"
     template:
-      src:                "client_install.rsp"
-      dest:               "{{ response_file }}"
+      src:              "client_install.rsp"
+      dest:             "{{ response_file }}"
     vars:
-      install_option:     "Administrator"
-    become:               yes
-    become_user:          oracle
+      install_option:   "Administrator"
+    become:             yes
+    become_user:        oracle
 
-  # --------------------- Install Oracle Client 12.1.0.2 Software Only in Silent Mode
+  # ------------------- Install Oracle Client 12.1.0.2 Software Only in Silent Mode
 
-  - name:                 "Install Oracle Client 12.1.0.2 Software Only in Silent Mode"
-    command:              "{{ client_installer_loc }}/runInstaller -silent -noconfig -responseFile {{ response_file }} -waitforcompletion -ignorePrereq"
-    args:
-      chdir:              "{{ client_installer_loc }}"
-      creates:            "{{ oracle_home }}/*"
-      register:             client_sw_install_result
-    become:               yes
-    become_user:          oracle
+  - name:               "Install Oracle Client 12.1.0.2 Software Only in Silent Mode"
+    command:              
+      argv:
+      -                 "{{ client_installer_loc }}/runInstaller"
+      -                 "-silent"
+      -                 "-noconfig"
+      -                 "-responseFile"
+      -                 "{{ response_file }}"
+      -                 "-waitforcompletion"
+      -                 "-ignorePrereq"
+      chdir:            "{{ client_installer_loc }}"
+      creates:          "{{ oracle_home }}/*"
+    register:           client_sw_install_result
+    become:             yes
+    become_user:        oracle
 
-  - name:                 "output from Install Oracle Client 12.1.0.2 Software Only in Silent Mode"
+  - name:               "output from Install Oracle Client 12.1.0.2 Software Only in Silent Mode"
     debug:
-      var:                client_sw_install_result.stdout_lines
-      verbosity:          0
+      var:              client_sw_install_result.stdout_lines
+      verbosity:        0
 
-  # --------------------- Run root scripts
+  # ------------------- Run root scripts
 
-  - name:                 "Run orainstRoot.sh after Oracle Client 12.1.0.2 Software Installation"
-    command:              "{{ inventory_location }}/orainstRoot.sh"
-    register:             orainstRoot
-    when:                 client_sw_install_result.stdout is search('/orainstRoot.sh')
-    become:               yes
-    become_user:          root
+  - name:               "Run orainstRoot.sh after Oracle Client 12.1.0.2 Software Installation"
+    command:
+      argv:
+      -                 "{{ inventory_location }}/orainstRoot.sh"
+    register:           orainstRoot
+    when:               client_sw_install_result.stdout is search('/orainstRoot.sh')
+    become:             yes
+    become_user:        root
 
-  - name:                 "Output from orainstRoot.sh script"
+  - name:               "Output from orainstRoot.sh script"
     debug:
-      var:                orainstRoot.stdout_lines
-      verbosity:          0
-    when:                 orainstRoot.stdout_lines is defined
+      var:              orainstRoot.stdout_lines
+      verbosity:        0
+    when:               orainstRoot.stdout_lines is defined
 
-  # --------------------- Configure all tools
+  # ------------------- Configure all tools
 
-  - name:                 "Run configToolAllCommands after Oracle Client 12.1.0.2 Software Installation"
-    command:              "/bin/sh {{ oracle_home }}/cfgtoollogs/configToolAllCommands"
-    register:             configToolAllCommands
-    when:                 client_sw_install_result.stdout is search('/cfgtoollogs/configToolAllCommands')
-    become:               yes
-    become_user:          oracle
+  - name:               "Run configToolAllCommands after Oracle Client 12.1.0.2 Software Installation"
+    command:
+      argv:
+      -                 /bin/sh
+      -                 "{{ oracle_home }}/cfgtoollogs/configToolAllCommands"
+    register:           configToolAllCommands
+    when:               client_sw_install_result.stdout is search('/cfgtoollogs/configToolAllCommands')
+    become:             yes
+    become_user:        oracle
 
-  - name:                 "Output from configToolAllCommands script"
+  - name:               "Output from configToolAllCommands script"
     debug:
-      var:                configToolAllCommands.stdout_lines
-      verbosity:          0
-    when:                 configToolAllCommands.stdout_lines is defined
+      var:              configToolAllCommands.stdout_lines
+      verbosity:        0
+    when:               configToolAllCommands.stdout_lines is defined
 
   # ------------------------------------------------------------------------------
   # Creates and maintains the TNSNAMES file for data guard
@@ -193,24 +228,61 @@
   # The variable 'tnsnames' must be defined
   # ------------------------------------------------------------------------------
         
-  - name:                 "Set path of TNSNAMES file"
+  - name:               "Set path of TNSNAMES file"
     set_fact:
-      tnsnames:           "{{ oracle_home }}/network/admin/tnsnames.ora"
+      tnsnames:         "{{ oracle_home }}/network/admin/tnsnames.ora"
 
-  # --------------------- Add aliases for DEMO database
+  # ------------------- Add aliases for DEMO database
 
-  - name:                 "Add DEMO_DURAL alias to TNSNAMES file"
+  - name:               "Add DEMO_DURAL alias to TNSNAMES file"
     lineinfile:
-      create:             "yes"
-      group:              "{{ install_group }}"
-      mode:               0644
-      owner:              "oracle"
-      path:               "{{ tnsnames }}"
-      regexp:             '^DEMO_DURAL\s*=\s*'
-      line:               "DEMO_DURAL=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dural.yaocm.id.au)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=demo_dural.yaocm.id.au)))"
-      insertbefore:       EOF
-    become:               yes
-    become_user:          oracle
+      create:           "yes"
+      group:            "{{ install_group }}"
+      mode:             0644
+      owner:            "oracle"
+      path:             "{{ tnsnames }}"
+      regexp:           '^DEMO_DURAL\s*=\s*'
+      line:             "DEMO_DURAL=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dural.yaocm.id.au)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=demo_dural.yaocm.id.au)))"
+      insertbefore:     EOF
+    become:             yes
+    become_user:        oracle
 
+  # ------------------- Set Facts for verification of HammerDB Installation
+  
+  - name:               "Set Facts for verification of HammerDB Installation"
+    set_fact:
+      verify_script:    "{{ hammerdb_home }}/verify_client_libraries.sh"
+
+  # ------------------- Create script for verification of HammerDB Installation
+
+  - name:               "Create script for verification of HammerDB Installation"
+    template:
+      src:              "verify_client_libraries.sh"
+      dest:             "{{ verify_script }}"
+      mode:             'u+rwx'
+    become:             yes
+    become_user:        hammer
+
+  # ------------------- Verification of HammerDB Installation
+
+  - name:               "Verification of HammerDB Installation"
+    command:
+      argv:
+      -                 "{{ verify_script }}"
+      chdir:            "{{ hammerdb_loc }}"
+    register:           verify_script_result
+    changed_when:       false
+    become:             yes
+    become_user:        hammer
+
+  - name:               "Output from Verification of HammerDB Installation"
+    debug:
+      var:              verify_script_result.stdout_lines
+      verbosity:        0
+
+  - name:               "Ensures HammerDB is installed correctly"
+    fail:
+      msg:              "HammerDB is not installed correctly"
+    when:               verify_script_result.stdout is not search('Success ... loaded library Oratcl for Oracle')
 ...
       
