@@ -5,7 +5,6 @@
 
   - name:               "Set global variables"
     set_fact:
-      software_nfs_loc: "/opt/share/Software"
       client_installer_loc:
                         "/opt/share/Software/database/linuxamd64_12102/client"
       hammerdb_home:    "/home/hammer"
@@ -39,7 +38,6 @@
       - nscd
       - git
       - libXft
-      - nfs-utils
       - libnsl
       - tcl
       state:            latest
@@ -111,25 +109,6 @@
   #   group. This is to be done ONLY ONCE as the root scripts change the
   #   persmissions later during software installation.
   # ------------------------------------------------------------------------------
-
-  # ------------------- Create NFS mount point for Oracle Software
-
-  - name:               "Create Mount Point for Oracle Installation Software"
-    file:
-      path:             "{{ software_nfs_loc }}"
-      state:            directory
-    become:             yes
-    become_user:        root
-
-  - name:               "Mount NFS Share for Oracle Installation Software"
-    mount:
-      path:             "{{ software_nfs_loc }}"
-      src:              narrabri.yaocm.id.au:/data/Software
-      fstype:           nfs4
-      opts:             ro,bg,hard,nointr,rsize=32768,wsize=32768,tcp,vers=4,timeo=600
-      state:            mounted
-    become:             yes
-    become_user:        root
 
   # ------------------- Create the directories needed for installation
 
