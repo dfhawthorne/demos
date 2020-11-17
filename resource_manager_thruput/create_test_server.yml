@@ -1,0 +1,84 @@
+---
+# ------------------------------------------------------------------------------
+# Installs and configures an Oracle 19C database on DURAL as a test server
+# ------------------------------------------------------------------------------
+
+- name:                 "Creates a test database server on DURAL"
+  hosts:                dural.yaocm.id.au
+  tasks:
+  
+  - name:               "Sets global variables"
+    set_fact:
+      db_installer_loc: "/opt/share/Software/database/linuxamd64_193000"
+      install_group:    "oinstall"
+      inventory_location:
+                        "/opt/app/oraInventory"
+      oracle_base:      "/opt/app/oracle"
+      oracle_home:      "/opt/app/oracle/product/19.3.0.2/database"
+      patch_directory:  "/opt/share/Software/database/p31720396_190000_Linux-x86-64"
+      response_file:    "/home/oracle/db_install.rsp"
+      osdba_group:      "dba"
+  
+  # ----------------------------------------------------------------------------
+  # The Oracle 19C preinstallation RPM should only be installed once, even if
+  #   a more newer version exists as the RPM creates users and does system
+  #   configuration.
+  # ----------------------------------------------------------------------------
+  
+  - name:               "Install Oracle Preinstallation RPM"
+    yum:
+      name:             oracle-database-preinstall-19c
+      state:            present
+    become:             yes
+    become_user:        root
+    
+  - name:               "Create response file for silent installation"
+    template:
+      src:              db_install.rsp.j2
+      dest:             "{{ response_file }}"
+      mode:             0600
+    var:
+      install_option:   "INSTALL_DB_AND_CONFIG"
+      install_edition:  "EE"
+      starter_db_type:  "GENERAL_PURPOSE"
+      globalDBName:     ""
+      SID:              ""
+      PDBName:          ""
+      characterSet:     "AL32UTF8"
+      memoryLimit:      "3120"
+    become:             yes
+    become_user:        oracle
+  
+  - name:               "Install Oracle DB Software in Silent Mode"
+    command:              
+      argv:
+      -                 "{{ db_installer_loc }}/runInstaller"
+      -                 "-silent"
+      -                 "-noconfig"
+      -                 "-responseFile"
+      -                 "{{ response_file }}"
+      -                 "-waitforcompletion"
+      -                 "-ignorePrereq"
+      chdir:            "{{ db_installer_loc }}"
+      creates:          "{{ oracle_home }}/*"
+    register:           db_install_result
+    become:             yes
+    become_user:        oracle
+
+  - name:               "Output from Install Oracle DB Software in Silent Mode"
+    debug:
+      var:              db_install_result.stdout_lines
+      verbosity:        0
+  
+  - name:               "Apply latest Release Update"
+    command:
+      argv:
+      -                 "{{ db_installer_loc }}/runInstaller"
+      -                 "-applyRU"
+      -                 "{{ patch_directory }}"
+      chdir:            "{{ oracle_home }}"
+    register:           apply_ru
+    become:             yes
+    become_user:        oracle
+    
+...
