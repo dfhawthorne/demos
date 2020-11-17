@@ -59,7 +59,7 @@ ORACLE_BASE={{ oracle_base }}
 
 #-------------------------------------------------------------------------------
 
-oracle.install.db.InstallEdition={{ install_edition }}
+oracle.install.db.InstallEdition=EE
 ###############################################################################
 #                                                                             #
 # PRIVILEGED OPERATING SYSTEM GROUPS                                          #
@@ -249,17 +249,17 @@ oracle.install.db.config.starterdb.installExampleSchemas=false
 # This variable holds the password that is to be used for all schemas in the
 # starter database.
 #-------------------------------------------------------------------------------
-oracle.install.db.config.starterdb.password.ALL=
+oracle.install.db.config.starterdb.password.ALL={{ pw_all }}
 
 #-------------------------------------------------------------------------------
 # Specify the SYS password for the starter database.
 #-------------------------------------------------------------------------------
-oracle.install.db.config.starterdb.password.SYS=
+oracle.install.db.config.starterdb.password.SYS={{ pw_sys }}
 
 #-------------------------------------------------------------------------------
 # Specify the SYSTEM password for the starter database.
 #-------------------------------------------------------------------------------
-oracle.install.db.config.starterdb.password.SYSTEM=
+oracle.install.db.config.starterdb.password.SYSTEM={{ pw_system }}
 
 #-------------------------------------------------------------------------------
 # Specify the DBSNMP password for the starter database.
@@ -270,7 +270,7 @@ oracle.install.db.config.starterdb.password.DBSNMP=
 #-------------------------------------------------------------------------------
 # Specify the PDBADMIN password required for creation of Pluggable Database in the Container Database.
 #-------------------------------------------------------------------------------
-oracle.install.db.config.starterdb.password.PDBADMIN=
+oracle.install.db.config.starterdb.password.PDBADMIN={{ pw_pdbadmin }}
 
 #-------------------------------------------------------------------------------
 # Specify the management option to use for managing the database.
@@ -316,7 +316,7 @@ oracle.install.db.config.starterdb.emAdminPassword=
 # This variable is to be set to false if database recovery is not required. Else 
 # this can be set to true.
 #-------------------------------------------------------------------------------
-oracle.install.db.config.starterdb.enableRecovery=
+oracle.install.db.config.starterdb.enableRecovery=true
 
 #-------------------------------------------------------------------------------
 # Specify the type of storage to use for the database.
@@ -324,7 +324,7 @@ oracle.install.db.config.starterdb.enableRecovery=
 #   - FILE_SYSTEM_STORAGE
 #   - ASM_STORAGE
 #-------------------------------------------------------------------------------
-oracle.install.db.config.starterdb.storageType=
+oracle.install.db.config.starterdb.storageType=FILE_SYSTEM_STORAGE
 
 #-------------------------------------------------------------------------------
 # Specify the database file location which is a directory for datafiles, control
@@ -332,14 +332,14 @@ oracle.install.db.config.starterdb.storageType=
 #
 # Applicable only when oracle.install.db.config.starterdb.storage=FILE_SYSTEM_STORAGE 
 #-------------------------------------------------------------------------------
-oracle.install.db.config.starterdb.fileSystemStorage.dataLocation=
+oracle.install.db.config.starterdb.fileSystemStorage.dataLocation={{ dataLocation }}
 
 #-------------------------------------------------------------------------------
 # Specify the recovery location.
 #
 # Applicable only when oracle.install.db.config.starterdb.storage=FILE_SYSTEM_STORAGE 
 #-------------------------------------------------------------------------------
-oracle.install.db.config.starterdb.fileSystemStorage.recoveryLocation=
+oracle.install.db.config.starterdb.fileSystemStorage.recoveryLocation={{ recoveryLocation }}
 
 #-------------------------------------------------------------------------------
 # Specify the existing ASM disk groups to be used for storage.
