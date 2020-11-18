@@ -9,17 +9,25 @@
   
   - name:               "Sets global variables"
     set_fact:
-      db_installer_loc: "/opt/share/Software/database/linuxamd64_193000"
+      db_installer_loc: "/home/oracle/linuxamd64_193000"
       install_group:    "oinstall"
       inventory_location:
                         "/opt/app/oraInventory"
       oracle_base:      "/opt/app/oracle"
       oracle_home:      "/opt/app/oracle/product/19.3.0.2/database"
-      patch_directory:  "/opt/share/Software/database/p31720396_190000_Linux-x86-64"
+      patch_directory:  "/opt/share/Software/database/p31720396_190000_Linux-x86-64/31720396"
+      sw_archive:       "/opt/share/Software/database/LINUX.X64_193000_db_home.zip"
       response_file:    "/home/oracle/db_install.rsp"
       osdba_group:      "dba"
       dataLocation:     "/opt/app/oracle/oradata"
       recoveryLocation: "/opt/app/oracle/recoveryarea"
+      install_option:   "INSTALL_DB_AND_CONFIG"
+      starterdb_type:   "GENERAL_PURPOSE"
+      globalDBName:     "DEMOCDB19C.YAOCM.ID.AU"
+      SID:              "DEMO19C"
+      PDBName:          "TPCV3R3A"
+      characterSet:     "AL32UTF8"
+      memoryLimit:      "3120"
 
   # ----------------------------------------------------------------------------
   # Load passwords from passwords/oracle.yml which has the following variables:
@@ -33,8 +41,7 @@
         
   - name:               "Load passwords"
     include_vars:
-      dir:              "passwords"
-      file:             "oracle"
+      file:             "passwords/oracle.yml"
     no_log:             true
   
   # ----------------------------------------------------------------------------
@@ -55,14 +62,27 @@
       src:              db_install.rsp.j2
       dest:             "{{ response_file }}"
       mode:             0600
-    var:
-      install_option:   "INSTALL_DB_AND_CONFIG"
-      starter_db_type:  "GENERAL_PURPOSE"
-      globalDBName:     "DEMOCDB19C.YAOCM.ID.AU"
-      SID:              "DEMO19C"
-      PDBName:          "TPCV3R3A"
-      characterSet:     "AL32UTF8"
-      memoryLimit:      "3120"
+    become:             yes
+    become_user:        oracle
+    no_log:             true
+      
+  - name:               "Create directory for Installation Software"
+    file:
+      name:             "{{ db_installer_loc }}"
+      group:            "{{ install_group }}"
+      owner:            oracle
+      state:            directory
+    become:             yes
+    become_user:        oracle
+
+  - name:               "Extract the Oracle Software Installer"
+    unarchive:
+      creates:          "{{ db_installer_loc }}/runInstaller"
+      dest:             "{{ db_installer_loc }}"
+      group:            "{{ install_group }}"
+      owner:            oracle
+      remote_src:       yes
+      src:              "{{ sw_archive }}"
     become:             yes
     become_user:        oracle
   
@@ -76,8 +96,6 @@
       -                 "{{ response_file }}"
       -                 "-waitforcompletion"
       -                 "-ignorePrereq"
-      -                 "-applyRU"
-      -                 "{{ patch_directory }}"
       chdir:            "{{ db_installer_loc }}"
       creates:          "{{ oracle_home }}/*"
     register:           db_install_result
