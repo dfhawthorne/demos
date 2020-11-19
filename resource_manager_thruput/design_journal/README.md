@@ -15,3 +15,5 @@ Table of Contents
 - [2020-11-16](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_16.md) Design of demonstration database
 - [2020-11-17](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_17.md) install\_oracle19c.yml script
 - [2020-11-18](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_18.md) create\_test\_server.yml script
+- [2020-11-19](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_19.md) Progress on installing Oracle 19C software
+- [2020-11-20](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_20.md) Review of Installation and Webinar

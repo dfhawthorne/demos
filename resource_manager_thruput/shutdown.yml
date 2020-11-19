@@ -7,7 +7,7 @@
     -                   dural.yaocm.id.au
   tasks:
     - name:             "Shutdown host"
-      command:          shutdown -h now
+      command:          shutdown -h +1
       become:           yes
       become_user:      root
 ...

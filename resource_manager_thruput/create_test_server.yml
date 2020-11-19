@@ -107,7 +107,7 @@
   - name:               "Run orainstRoot.sh after Oracle Database Software Installation"
     command:
       argv:
-      -                 "{{ oracle_vars.inventory_location }}/orainstRoot.sh"
+      -                 "{{ inventory_location }}/orainstRoot.sh"
     register:           orainstRoot
     when:               db_install_result.stdout is search('/orainstRoot.sh')
     become:             yes
@@ -119,17 +119,34 @@
       verbosity:        0
     when:               orainstRoot.stdout_lines is defined
 
-  - name:               "Run configToolAllCommands after Oracle Client 12.1.0.2 Software Installation"
+  - name:               "Run root.sh after Oracle Database Software Installation"
     command:
       argv:
-      -                 "/bin/sh"
-      -                 "{{ oracle_home }}/cfgtoollogs/configToolAllCommands"
+      -                 "{{ oracle_home }}/root.sh"
+    register:           db_root
+    when:               db_install_result.stdout is search('/root.sh')
+    become:             yes
+    become_user:        root
+
+  - name:               "Output from root.sh script"
+    debug:
+      var:              db_root.stdout_lines
+      verbosity:        0
+    when:               db_root.stdout_lines is defined
+
+  - name:               "Complete configuration after Oracle DB Software Installation"
+    command:
+      argv:
+      -                 "{{ oracle_home }}/runInstaller"
+      -                 "-executeConfigTools"
+      -                 "-responseFile"
+      -                 "{{ response_file }}"
     register:           configToolAllCommands
-    when:               db_install_result.stdout is search('/cfgtoollogs/configToolAllCommands')
+    when:               db_install_result.stdout is search('-executeConfigTools')
     become:             yes
     become_user:        oracle
 
-  - name:               "Output from configToolAllCommands script"
+  - name:               "Output from configuration script"
     debug:
       var:              configToolAllCommands.stdout_lines
       verbosity:        0
