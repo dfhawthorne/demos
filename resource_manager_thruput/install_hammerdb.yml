@@ -8,7 +8,7 @@
       client_installer_loc:
                         "/opt/share/Software/database/linuxamd64_12102/client"
       hammerdb_home:    "/home/hammer"
-      hammerdb_loc:     "/usr/local/HammerDB-3.3"
+      hammerdb_loc:     "/usr/local/HammerDB-4.0"
       install_group:    "oinstall"
       inventory_location:
                         "/opt/app/oraInventory"
@@ -82,9 +82,9 @@
   
   - name:               "Download Linux Installer for HammerDB"
     get_url:
-      url:              "https://github.com/TPC-Council/HammerDB/releases/download/v3.3/HammerDB-3.3-Linux-x86-64-Install"
+      url:              "https://github.com/TPC-Council/HammerDB/releases/download/v4.0/HammerDB-4.0-Linux-x64-installer.run"
       dest:             "{{ hammerdb_home }}"
-      checksum:         sha1:1aed3d97256c1e22b56cd9d1e5d95fd7d28a1bad
+      checksum:         sha1:59f449769a9ef10961e8406d43cb0109f9bf75e6
       mode:             "a+rx"
     become:             yes
     become_user:        hammer
@@ -94,10 +94,20 @@
   
   - name:               "Install HammerDB"
     expect:
-      command:          "{{ hammerdb_home }}/HammerDB-3.3-Linux-x86-64-Install"
+      command:          "{{ hammerdb_home }}/HammerDB-4.0-Linux-x64-installer.run"
       responses:
+        "Press ":       ""
+        "Do you accept this license":
+                        "Y"
         "Continue":     "Y"
-        "Where":        "{{ hammerdb_loc }}"
+        "Installation Directory ":
+                        "{{ hammerdb_loc }}"
+        "Do you want to continue":
+                        "Y"
+        "View Readme file":
+                        "n"
+        "Run HammerDB ":
+                        "n"
       creates:          "{{ hammerdb_loc }}"
     become:             yes
     become_user:        root
@@ -165,6 +175,7 @@
     debug:
       var:              client_sw_install_result.stdout_lines
       verbosity:        0
+    when:               client_sw_install_result.stdout_lines is defined
 
   # ------------------- Run root scripts
 
@@ -191,7 +202,9 @@
       -                 /bin/sh
       -                 "{{ oracle_home }}/cfgtoollogs/configToolAllCommands"
     register:           configToolAllCommands
-    when:               client_sw_install_result.stdout is search('/cfgtoollogs/configToolAllCommands')
+    when:
+    -                   client_sw_install_result.stdout is defined
+    -                   client_sw_install_result.stdout is search('/cfgtoollogs/configToolAllCommands')
     become:             yes
     become_user:        oracle
 
@@ -262,6 +275,8 @@
   - name:               "Ensures HammerDB is installed correctly"
     fail:
       msg:              "HammerDB is not installed correctly"
-    when:               verify_script_result.stdout is not search('Success ... loaded library Oratcl for Oracle')
+    when:
+    -                   verify_script_result.stdout is defined
+    -                   verify_script_result.stdout is not search('Success ... loaded library Oratcl for Oracle')
 ...
       
