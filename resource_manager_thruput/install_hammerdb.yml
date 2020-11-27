@@ -15,15 +15,15 @@
       oracle_base:      "/opt/app/oracle"
       oracle_home:      "/opt/app/oracle/product/12.1.0.2/client"
 
-  
+
   # ------------------- Install extra packages
   #                     (see https://hammerdb.com/docs/ch01s02.html)
-  
+
   - name:               "Verify OS Distribution"
     fail:
       msg:              "Incorrect OS Distribution"
     when:               ansible_distribution != "OracleLinux" or ansible_distribution_major_version <= '7'
-  
+
   - name:               "Remove Old Packages"
     yum:
       name:
@@ -40,19 +40,19 @@
       - libXft
       - libnsl
       - tcl
-      state:            latest
+      state:            present
     become:             yes
     become_user:        root
-    
+
   - name:               "Install PEXPECT using PIP"
     pip:
       name:             pexpect
-      state:            latest
+      state:            present
     become:             yes
     become_user:        root
-    
+
   # ------------------- Create Groups and Users
-  
+
   - name:               "Create Groups"
     group:
       name:             "{{ item }}"
@@ -62,7 +62,7 @@
     with_items:
     - "{{ install_group }}"
     - hammer
-  
+
   - name:               "Create Users"
     user:
       create_home:      yes
@@ -79,7 +79,7 @@
 
   # ------------------- Download Linux installer
   #                     (see https://hammerdb.com/docs/ch01s03.html)
-  
+
   - name:               "Download Linux Installer for HammerDB"
     get_url:
       url:              "https://github.com/TPC-Council/HammerDB/releases/download/v4.0/HammerDB-4.0-Linux-x64-installer.run"
@@ -88,10 +88,10 @@
       mode:             "a+rx"
     become:             yes
     become_user:        hammer
-      
+
   # -------------------- Install HammerDB
   #                      (see https://www.hammerdb.com/docs/ch01s05.html)
-  
+
   - name:               "Install HammerDB"
     expect:
       command:          "{{ hammerdb_home }}/HammerDB-4.0-Linux-x64-installer.run"
@@ -122,15 +122,22 @@
 
   # ------------------- Create the directories needed for installation
 
+  - name:               "Verifies existence of {{ oracle_base }}"
+    stat:
+      path:             "{{ oracle_base }}"
+    register:           oracle_base_status
+
   - name:               "Create the directories needed for installation"
     file:
       path:             "{{ oracle_base }}"
       owner:            oracle
       group:            "{{ install_group }}"
+      mode:             0775
       state:            directory
     become:             yes
     become_user:        root
-        
+    when:               not oracle_base_status.stat.exists
+
   # =============================================================================
   # Install Oracle Client 12.1.0.2 Software Only:
   # (1) Create response file for silent installation
@@ -146,8 +153,9 @@
 
   - name:               "Create response file for silent installation"
     template:
-      src:              "client_install.rsp"
+      src:              "client_install.rsp.j2"
       dest:             "{{ response_file }}"
+      mode:             0660
     vars:
       install_option:   "Administrator"
     become:             yes
@@ -156,7 +164,7 @@
   # ------------------- Install Oracle Client 12.1.0.2 Software Only in Silent Mode
 
   - name:               "Install Oracle Client 12.1.0.2 Software Only in Silent Mode"
-    command:              
+    command:
       argv:
       -                 "{{ client_installer_loc }}/runInstaller"
       -                 "-silent"
@@ -177,24 +185,10 @@
       verbosity:        0
     when:               client_sw_install_result.stdout_lines is defined
 
-  # ------------------- Run root scripts
-
-  - name:               "Run orainstRoot.sh after Oracle Client 12.1.0.2 Software Installation"
-    command:
-      argv:
-      -                 "{{ inventory_location }}/orainstRoot.sh"
-    register:           orainstRoot
-    when:               client_sw_install_result.stdout is search('/orainstRoot.sh')
-    become:             yes
-    become_user:        root
-
-  - name:               "Output from orainstRoot.sh script"
-    debug:
-      var:              orainstRoot.stdout_lines
-      verbosity:        0
-    when:               orainstRoot.stdout_lines is defined
-
   # ------------------- Configure all tools
+  #                     No response file is needed because no passwords need to
+  #                     be set. See
+  # https://docs.oracle.com/en/database/oracle/oracle-database/12.2/ladbi/running-postinstallation-configuration-using-a-password-response-file.html
 
   - name:               "Run configToolAllCommands after Oracle Client 12.1.0.2 Software Installation"
     command:
@@ -219,7 +213,7 @@
   #
   # The variable 'tnsnames' must be defined
   # ------------------------------------------------------------------------------
-        
+
   - name:               "Set path of TNSNAMES file"
     set_fact:
       tnsnames:         "{{ oracle_home }}/network/admin/tnsnames.ora"
@@ -234,13 +228,16 @@
       owner:            "oracle"
       path:             "{{ tnsnames }}"
       regexp:           '^DEMO_DURAL\s*=\s*'
-      line:             "DEMO_DURAL=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dural.yaocm.id.au)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=demo_dural.yaocm.id.au)))"
+      line:             >
+        DEMO_DURAL=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dural.yaocm.id.au)
+        (PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)
+        (SERVICE_NAME=demo_dural.yaocm.id.au)))
       insertbefore:     EOF
     become:             yes
     become_user:        oracle
 
   # ------------------- Set Facts for verification of HammerDB Installation
-  
+
   - name:               "Set Facts for verification of HammerDB Installation"
     set_fact:
       verify_script:    "{{ hammerdb_home }}/verify_client_libraries.sh"
@@ -249,7 +246,7 @@
 
   - name:               "Create script for verification of HammerDB Installation"
     template:
-      src:              "verify_client_libraries.sh"
+      src:              "verify_client_libraries.sh.j2"
       dest:             "{{ verify_script }}"
       mode:             'u+rwx'
     become:             yes
@@ -271,6 +268,7 @@
     debug:
       var:              verify_script_result.stdout_lines
       verbosity:        0
+    when:               verify_script_result.stdout is defined
 
   - name:               "Ensures HammerDB is installed correctly"
     fail:
@@ -279,4 +277,3 @@
     -                   verify_script_result.stdout is defined
     -                   verify_script_result.stdout is not search('Success ... loaded library Oratcl for Oracle')
 ...
-      
