@@ -18,3 +18,4 @@ Table of Contents
 - [2020-11-19](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_19.md) Progress on installing Oracle 19C software
 - [2020-11-20](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_20.md) Review of Installation and Webinar
 - [2020-11-29](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_29.md) Completion of DB Installation
+- [2020-11-30](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_30.md) Prepare DB for Testing
