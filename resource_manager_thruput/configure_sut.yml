@@ -1,0 +1,58 @@
+---
+# ------------------------------------------------------------------------------
+# Configure System Under Test (SUT) for use by HammerDB
+# ------------------------------------------------------------------------------
+- hosts:
+  -                     dural.yaocm.id.au
+  -                     hammer.yaocm.id.au
+  tasks:
+
+  - name:               "Sets global variables"
+    set_fact:
+      oracle_base:      "/opt/app/oracle"
+      oracle_home:      "/opt/app/oracle/product/19.3.0.2/database"
+      globalDBName:     "DEMOCDB19C.YAOCM.ID.AU"
+      SID:              "DEMO19C"
+      PDBName:          "TPCV3R3A"
+
+  - name:               "Install required packages from repositories"
+    dnf:
+      name:
+        -               tcl
+      state:            present
+    become:             yes
+    become_user:        root
+
+  - name:               "Install required packages using PIP"
+    pip:
+      name:
+        -               "cx_Oracle"
+      state:            present
+    become:             yes
+    become_user:        root
+
+  - name:               "Create DB Management Scripts"
+    template:
+      dest:             "{{ item }}"
+      src:              "{{ item | basename }}.j2"
+      mode:             "u+rwx"
+    with_items:
+      -                 "/home/oracle/configure_sut_db.sh"
+    become:             yes
+    become_user:        oracle
+    when:               inventory_hostname == "dural.yaocm.id.au"
+
+  - name:               "Configure DB for SUT"
+    command:
+      argv:
+        -               "/home/oracle/configure_sut_db.sh"
+    become:             yes
+    become_user:        oracle
+    when:               inventory_hostname == "dural.yaocm.id.au"
+    register:           configure_sut_db
+
+  - name:               "Display output from Configure DB for SUT"
+    debug:
+      var:              configure_sut_db.stdout_lines
+    when:               configure_sut_db.stdout_lines is defined
+...
