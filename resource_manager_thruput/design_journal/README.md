@@ -21,4 +21,4 @@ Table of Contents
 - [2020-11-30](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_11_30.md) Prepare DB for Testing (1)
 - [2020-12-05](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_05.md) Choice of Interface to Oracle
 - [2020-12-06](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_06.md) Choice of Scripting Language
-
+- [2020-12-17](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_17.md) Prepare DB for Testing (2)

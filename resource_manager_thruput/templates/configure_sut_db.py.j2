@@ -1,0 +1,36 @@
+#!/bin/python3
+# ------------------------------------------------------------------------------
+# Configures the database on the System Under Test (SUT) for use by HammerDB
+# ------------------------------------------------------------------------------
+
+import os
+import cx_Oracle
+
+os.environ['ORACLE_BASE'] = '{{ oracle_base }}'
+os.environ['ORACLE_SID']  = '{{ SID }}'
+os.environ['ORACLE_HOME'] = '{{ oracle_home }}'
+
+# ------------------------------------------------------------------------------
+# Connect to the correct container
+# ------------------------------------------------------------------------------
+
+conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA)
+cursor = conn.cursor()
+cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
+
+# ------------------------------------------------------------------------------
+# Check whether Local Undo is enabled
+# ------------------------------------------------------------------------------
+
+sql = """SELECT PROPERTY_NAME, PROPERTY_VALUE 
+FROM   DATABASE_PROPERTIES 
+WHERE  PROPERTY_NAME = 'LOCAL_UNDO_ENABLED'"""
+
+cursor.execute(sql)
+(property_name, property_value) = cursor.fetchone()
+
+if property_value != "TRUE":
+    print(f"{property_name}={property_value}", file=sys.stderr)
+    exit(1)
+
+print("Local UNDO is enabled")

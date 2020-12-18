@@ -1,0 +1,47 @@
+---
+# ------------------------------------------------------------------------------
+# Start Oracle Listener and Database Instance
+# ------------------------------------------------------------------------------
+
+
+- name:               "Create DB Management Scripts"
+  template:
+    dest:             "{{ item }}"
+    src:              "{{ item | basename }}.j2"
+    mode:             "u+rwx"
+  with_items:
+    -                 "/home/oracle/start_listener.sh"
+    -                 "/home/oracle/start_db_inst.py"
+  become:             yes
+  become_user:        oracle
+  when:               inventory_hostname == "dural.yaocm.id.au"
+
+- name:               "Start Oracle Listener"
+  command:
+    argv:
+      -               "/home/oracle/start_listener.sh"
+  become:             yes
+  become_user:        oracle
+  when:               inventory_hostname == "dural.yaocm.id.au"
+  register:           start_listener
+
+- name:               "Status of Oracle Listener"
+  debug:
+    var:              start_listener.stdout_lines
+  when:               start_listener.stdout_lines is defined
+
+- name:               "Start Oracle Database Instance"
+  command:
+    argv:
+      -               "/home/oracle/start_db_inst.py"
+  become:             yes
+  become_user:        oracle
+  when:               inventory_hostname == "dural.yaocm.id.au"
+  register:           start_db_inst
+
+- name:               "Status of Oracle Database Instance"
+  debug:
+    var:              start_db_inst.stdout_lines
+  when:               start_db_inst.stdout_lines is defined
+
+...

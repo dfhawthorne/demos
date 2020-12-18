@@ -1,0 +1,87 @@
+#!/bin/python3
+# ------------------------------------------------------------------------------
+# Configures the database on the System Under Test (SUT) for use by HammerDB
+# ------------------------------------------------------------------------------
+
+import os
+import cx_Oracle
+
+os.environ['ORACLE_BASE'] = '{{ oracle_base }}'
+os.environ['ORACLE_SID']  = '{{ SID }}'
+os.environ['ORACLE_HOME'] = '{{ oracle_home }}'
+
+# ------------------------------------------------------------------------------
+# Get initial status of database instance
+# ------------------------------------------------------------------------------
+
+status = None
+conn   = None
+cursor = None
+
+try:
+    conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA)
+    cursor = conn.cursor()
+    cursor.execute("SELECT status FROM v$instance")
+    (status, ) = cursor.fetchone()
+except cx_Oracle.OperationalError as ex:
+    err = str(ex).split('\n')[0]
+    if err != "ORA-01034: ORACLE not available":
+        raise
+    else:
+        status = "NOT STARTED"
+
+# ------------------------------------------------------------------------------
+# Start up instance, if required
+# ------------------------------------------------------------------------------
+
+if status == "NOT STARTED":
+    conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA | cx_Oracle.PRELIM_AUTH)
+    conn.startup()
+    conn.close()
+    conn   = None
+    status = "STARTED"
+    print("CDB instance started")
+
+# ------------------------------------------------------------------------------
+# Mount and open the database instance, if required
+# ------------------------------------------------------------------------------
+
+if conn == None:
+    conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA)
+    cursor = None
+
+if cursor == None:
+    cursor = conn.cursor()
+
+if status == "STARTED":
+    cursor.execute("alter database mount")
+    status = "MOUNTED"
+    print("CDB Database mounted")
+
+if status == "MOUNTED":
+    cursor.execute("alter database open")
+    status = "OPEN"
+    print("CDB Database opened")
+
+print(f'Status of CDB Instance is {status}')
+
+# ------------------------------------------------------------------------------
+# Open the pluggable database, if required
+# ------------------------------------------------------------------------------
+
+cursor.execute("select open_mode from v$pdbs where name='{{ PDBName }}'")
+(pdb_open_mode, ) = cursor.fetchone()
+if pdb_open_mode == "MOUNTED":
+    cursor.execute("ALTER PLUGGABLE DATABASE {{ PDBName }} OPEN")
+    cursor.execute("ALTER PLUGGABLE DATABASE {{ PDBName }} SAVE STATE")
+    print("PDB ({{ PDBName }}) opened")
+
+cursor.execute("select open_mode from v$pdbs where name='{{ PDBName }}'")
+(pdb_open_mode, ) = cursor.fetchone()
+
+print(f'Status of PDB ({{ PDBName }}) is {pdb_open_mode}')
+
+cursor.close()
+conn.close()
+
+exit(0)
