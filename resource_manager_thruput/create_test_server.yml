@@ -4,7 +4,7 @@
 # ------------------------------------------------------------------------------
 
 - name:                 "Creates a test database server on DURAL"
-  hosts:                dural.yaocm.id.au
+  hosts:                database
   tasks:
 
   - name:               "Sets global variables"
@@ -67,16 +67,16 @@
 
   - name:               "Create files for silent installation"
     template:
-      src:              "{{ item.src | basename  }}"
+      src:              "{{ item.dest | basename  }}.j2"
       dest:             "{{ item.dest }}"
       mode:             "{{ item.mode }}"
     become:             yes
     become_user:        oracle
     with_items:
-    - { src: "{{ response_file }}.j2", dest: "{{ response_file }}", mode: "0600" }
-    - { src: "{{ sw_installer }}.j2", dest: "{{ sw_installer }}", mode: "0700" }
-    - { src: "{{ config_tools }}.j2", dest: "{{ config_tools }}", mode: "0700" }
-    - { src: "{{ apply_patches }}.j2", dest: "{{ apply_patches }}", mode: "0700" }
+    - { dest: "{{ response_file }}", mode: "0600" }
+    - { dest: "{{ sw_installer }}", mode: "0700" }
+    - { dest: "{{ config_tools }}", mode: "0700" }
+    - { dest: "{{ apply_patches }}", mode: "0700" }
 
   - name:               "Create directory for Installation Software"
     file:

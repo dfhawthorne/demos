@@ -14,7 +14,7 @@
     -                 "/home/oracle/start_db_inst.py"
   become:             yes
   become_user:        oracle
-  when:               inventory_hostname == "dural.yaocm.id.au"
+  when:               inventory_hostname in groups['database']
 
 - name:               "Start Oracle Listener"
   command:
@@ -22,7 +22,7 @@
       -               "/home/oracle/start_listener.sh"
   become:             yes
   become_user:        oracle
-  when:               inventory_hostname == "dural.yaocm.id.au"
+  when:               inventory_hostname in groups['database']
   register:           start_listener
 
 - name:               "Status of Oracle Listener"
@@ -36,7 +36,7 @@
       -               "/home/oracle/start_db_inst.py"
   become:             yes
   become_user:        oracle
-  when:               inventory_hostname == "dural.yaocm.id.au"
+  when:               inventory_hostname in groups['database']
   register:           start_db_inst
 
 - name:               "Status of Oracle Database Instance"

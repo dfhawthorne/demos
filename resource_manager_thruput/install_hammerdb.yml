@@ -1,6 +1,6 @@
 ---
 - name:                 "Set Up HammerDB Server"
-  hosts:                hammer.yaocm.id.au
+  hosts:                client
   tasks:
 
   - name:               "Set global variables"
