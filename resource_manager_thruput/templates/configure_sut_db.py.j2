@@ -22,9 +22,9 @@ cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
 # Check whether Local Undo is enabled
 # ------------------------------------------------------------------------------
 
-sql = """SELECT PROPERTY_NAME, PROPERTY_VALUE 
-FROM   DATABASE_PROPERTIES 
-WHERE  PROPERTY_NAME = 'LOCAL_UNDO_ENABLED'"""
+sql = """SELECT property_name, property_value 
+FROM   database_properties 
+WHERE  property_name = 'LOCAL_UNDO_ENABLED'"""
 
 cursor.execute(sql)
 (property_name, property_value) = cursor.fetchone()
@@ -34,3 +34,62 @@ if property_value != "TRUE":
     exit(1)
 
 print("Local UNDO is enabled")
+
+# ------------------------------------------------------------------------------
+# Ensure that the database is in ARCHIVELOG mode
+# This requires the change to be done in MOUNT mode
+# ------------------------------------------------------------------------------
+
+cursor.execute("SELECT log_mode FROM v$database")
+(log_mode, ) = cursor.fetchone()
+print(f'Database is in {log_mode} mode.')
+if log_mode == "NOARCHIVELOG":
+    cursor.execute("ALTER SESSION SET CONTAINER=CDB$ROOT")
+    conn.shutdown(mode = cx_Oracle.DBSHUTDOWN_IMMEDIATE)
+    cursor.execute("ALTER DATABASE CLOSE NORMAL")
+    cursor.execute("ALTER DATABASE DISMOUNT")
+    cursor.close()
+    conn.shutdown(mode = cx_Oracle.DBSHUTDOWN_FINAL)
+    conn.close()
+    conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA | cx_Oracle.PRELIM_AUTH)
+    conn.startup()
+    conn.close()
+    conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA)
+    cursor = conn.cursor()
+    cursor.execute("ALTER DATABASE MOUNT")
+    cursor.execute("ALTER DATABASE ARCHIVELOG")
+    cursor.execute("ALTER DATABASE OPEN")
+    print('Database changed to ARCHIVELOG mode.')
+
+# ------------------------------------------------------------------------------
+# Define the required service name in the PDB to be used for testing
+# -------------------------------------------------------------------------------
+
+cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
+sql = """SELECT network_name, enabled
+  FROM dba_services
+  WHERE network_name=UPPER('{{ SUT_SERVICE_NAME }}')"""
+cursor.execute(sql)
+if cursor.rowcount == 0:
+    print('Service {{ SUT_SERVICE_NAME }} not defined')
+    parms  = (
+        '{{ SUT_SERVICE_NAME }}',
+        '{{ SUT_SERVICE_NAME }}'
+    )
+    cursor.callproc('dbms_service.create_service', parms)
+    print('Service {{ SUT_SERVICE_NAME }} created')
+
+cursor.execute(sql)
+(network_name, service_enabled) = cursor_fetchone()
+print(f"Service '{network_name}' is ENABLED='{service_enabled}'.")
+if service_enabled == "NO":
+    parms  = (
+        '{{ SUT_SERVICE_NAME }}',
+        None
+    )
+    cursor.callproc('dbms_service.start_service', parms)
+    print('Service {{ SUT_SERVICE_NAME }} started')
+
+
+
+

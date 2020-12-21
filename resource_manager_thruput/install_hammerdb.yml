@@ -218,7 +218,7 @@
       line:             >
         DEMO_DURAL=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dural.yaocm.id.au)
         (PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)
-        (SERVICE_NAME=demo_dural.yaocm.id.au)))
+        (SERVICE_NAME={{ SUT_SERVICE_NAME }})))
       insertbefore:     EOF
     become:             yes
     become_user:        oracle

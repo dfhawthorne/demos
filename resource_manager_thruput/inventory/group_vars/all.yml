@@ -13,4 +13,10 @@ nfs_loc:                "/opt/share/Software"
 install_group:          "oinstall"
 inventory_location:     "/opt/app/oraInventory"
 oracle_base:            "/opt/app/oracle"
+
+# ------------------------------------------------------------------------------
+# Global configuration settings
+# ------------------------------------------------------------------------------
+
+SUT_SERVICE_NAME:           "demo_dural.yaocm.id.au"
 ...
