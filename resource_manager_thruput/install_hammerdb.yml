@@ -3,19 +3,6 @@
   hosts:                client
   tasks:
 
-  - name:               "Set global variables"
-    set_fact:
-      client_installer_loc:
-                        "/opt/share/Software/database/linuxamd64_12102/client"
-      hammerdb_home:    "/home/hammer"
-      hammerdb_loc:     "/usr/local/HammerDB-4.0"
-      install_group:    "oinstall"
-      inventory_location:
-                        "/opt/app/oraInventory"
-      oracle_base:      "/opt/app/oracle"
-      oracle_home:      "/opt/app/oracle/product/12.1.0.2/client"
-
-
   # ------------------- Install extra packages
   #                     (see https://hammerdb.com/docs/ch01s02.html)
 
@@ -72,7 +59,7 @@
       shell:            /sbin/nologin
       state:            present
     with_items:
-      - { name: oracle, group: "{{ install_group }}", home: "/home/oracle" }
+      - { name: oracle, group: "{{ install_group }}", home: "{{ oracle_user_home }}" }
       - { name: hammer, group: hammer, home: "{{ hammerdb_home }}" }
     become:             yes
     become_user:        root

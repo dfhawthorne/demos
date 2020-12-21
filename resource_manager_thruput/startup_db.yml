@@ -3,15 +3,14 @@
 # Start Oracle Listener and Database Instance
 # ------------------------------------------------------------------------------
 
-
 - name:               "Create DB Management Scripts"
   template:
     dest:             "{{ item }}"
     src:              "{{ item | basename }}.j2"
     mode:             "u+rwx"
   with_items:
-    -                 "/home/oracle/start_listener.sh"
-    -                 "/home/oracle/start_db_inst.py"
+    -                 "{{ start_listener }}"
+    -                 "{{ start_db_inst }}"
   become:             yes
   become_user:        oracle
   when:               inventory_hostname in groups['database']
@@ -19,7 +18,7 @@
 - name:               "Start Oracle Listener"
   command:
     argv:
-      -               "/home/oracle/start_listener.sh"
+      -               "{{ start_listener }}"
   become:             yes
   become_user:        oracle
   when:               inventory_hostname in groups['database']
@@ -33,7 +32,7 @@
 - name:               "Start Oracle Database Instance"
   command:
     argv:
-      -               "/home/oracle/start_db_inst.py"
+      -               "{{ start_db_inst }}"
   become:             yes
   become_user:        oracle
   when:               inventory_hostname in groups['database']

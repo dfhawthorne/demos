@@ -7,35 +7,9 @@
   hosts:                database
   tasks:
 
-  - name:               "Sets global variables"
+  - name:               "Set global variables"
     set_fact:
-      install_group:    "oinstall"
-      inventory_location:
-                        "/opt/app/oraInventory"
-      oracle_base:      "/opt/app/oracle"
-      oracle_home:      "/opt/app/oracle/product/19.3.0.2/database"
-      sw_archive:       "/opt/share/Software/database/LINUX.X64_193000_db_home.zip"
-      patch_archive:    "/opt/share/Software/Patches/p31720396_190000_Linux-x86-64.zip"
-      response_file:    "/home/oracle/db_install.rsp"
-      sw_installer:     "/home/oracle/install_rdbms.sh"
-      config_tools:     "/home/oracle/config_rdbms.sh"
-      apply_patches:    "/home/oracle/apply_patches.sh"
-      min_opatch_vers:  '12.2.0.1.19'
-      osdba_group:      "dba"
-      dataLocation:     "/opt/app/oracle/oradata"
-      recoveryLocation: "/opt/app/oracle/recoveryarea"
-      install_option:   "INSTALL_DB_AND_CONFIG"
-      starterdb_type:   "GENERAL_PURPOSE"
-      globalDBName:     "DEMOCDB19C.YAOCM.ID.AU"
-      SID:              "DEMO19C"
-      PDBName:          "TPCV3R3A"
-      characterSet:     "AL32UTF8"
-      memoryLimit:      "3120"
-
-  - name:               "Set global variables based on other global variables"
-    set_fact:
-      opatch_bin:       "{{ oracle_home }}/OPatch/opatch"
-      patch_directory:  "{{ oracle_home }}/patch/31720396"
+      response_file:    "{{ oracle_user_home }}/db_install.rsp"
 
   # ----------------------------------------------------------------------------
   # Load passwords from passwords/oracle.yml which has the following variables:

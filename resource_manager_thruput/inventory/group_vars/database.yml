@@ -1,0 +1,34 @@
+---
+# ------------------------------------------------------------------------------
+# Global variables for Oracle Database Server
+# ------------------------------------------------------------------------------
+
+oracle_home:            "{{ oracle_base }}/product/19.3.0.2/database"
+sw_archive:             "{{ nfs_loc }}/database/LINUX.X64_193000_db_home.zip"
+patch_archive:          "{{ nfs_loc }}/Patches/p31720396_190000_Linux-x86-64.zip"
+sw_installer:           "{{ oracle_user_home }}/install_rdbms.sh"
+config_tools:           "{{ oracle_user_home }}/config_rdbms.sh"
+apply_patches:          "{{ oracle_user_home }}/apply_patches.sh"
+min_opatch_vers:        '12.2.0.1.19'
+osdba_group:            "dba"
+dataLocation:           "{{ oracle_base }}/oradata"
+recoveryLocation:       "{{ oracle_base }}/recoveryarea"
+install_option:         "INSTALL_DB_AND_CONFIG"
+starterdb_type:         "GENERAL_PURPOSE"
+globalDBName:           "DEMOCDB19C.YAOCM.ID.AU"
+SID:                    "DEMO19C"
+PDBName:                "TPCV3R3A"
+characterSet:           "AL32UTF8"
+memoryLimit:            "3120"
+opatch_bin:             "{{ oracle_home }}/OPatch/opatch"
+patch_directory:        "{{ oracle_home }}/patch/31720396"
+
+# ------------------------------------------------------------------------------
+# Miscellaneous scripts
+# ------------------------------------------------------------------------------
+
+start_listener:         "{{ oracle_user_home }}/start_listener.sh"
+start_db_inst:          "{{ oracle_user_home }}/start_db_inst.py"
+shutdown_db:            "{{ oracle_user_home }}/shutdown_db.sh"
+configure_sut_db:       "{{ oracle_user_home }}/configure_sut_db.py"
+...

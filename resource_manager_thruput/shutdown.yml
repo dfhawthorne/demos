@@ -2,12 +2,34 @@
 # ------------------------------------------------------------------------------
 # Shut down multiple hosts
 # ------------------------------------------------------------------------------
-- hosts:
-    -                   hammer.yaocm.id.au
-    -                   dural.yaocm.id.au
+- hosts:                all
+
   tasks:
-    - name:             "Shutdown host"
-      command:          shutdown -h +1
-      become:           yes
-      become_user:      root
+  - name:               "Create Database Shutdown Script"
+    template:
+      src:              "{{ item | basename }}.j2"
+      dest:             "{{ item }}"
+      mode:             0700
+    become:             yes
+    become_user:        oracle
+    with_items:
+    -                   "{{ shutdown_db }}"
+    when:               inventory_hostname in groups['database']
+
+  - name:               "Shutdown Database"
+    command:
+      argv:
+        -               "{{ shutdown_db }}"
+    become:             yes
+    become_user:        oracle
+    when:               inventory_hostname in groups['database']
+
+  - name:               "Shutdown host"
+    command:
+      argv:
+        -               "shutdown"
+        -               "-h"
+        -               "1"
+    become:             yes
+    become_user:        root
 ...

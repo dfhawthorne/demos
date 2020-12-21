@@ -23,3 +23,4 @@ Table of Contents
 - [2020-12-06](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_06.md) Choice of Scripting Language
 - [2020-12-17](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_17.md) Prepare DB for Testing (2)
 - [2020-12-19](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_19.md) Remove Hard-Coded Hostnames
+- [2020-12-20](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_20.md) Created Group Variable Files
