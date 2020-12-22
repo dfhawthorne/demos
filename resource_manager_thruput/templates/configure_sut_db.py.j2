@@ -66,30 +66,28 @@ if log_mode == "NOARCHIVELOG":
 # -------------------------------------------------------------------------------
 
 cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
-sql = """SELECT network_name, enabled
+sut_service_network_name = '{{ SUT_SERVICE_NAME }}'.upper()
+sut_service_name         = sut_service_network_name.split('.')[0]
+sql = f"""SELECT network_name
   FROM dba_services
-  WHERE network_name=UPPER('{{ SUT_SERVICE_NAME }}')"""
+  WHERE name='{sut_service_name}'"""
 cursor.execute(sql)
+row = cursor.fetchone()
 if cursor.rowcount == 0:
-    print('Service {{ SUT_SERVICE_NAME }} not defined')
-    parms  = (
-        '{{ SUT_SERVICE_NAME }}',
-        '{{ SUT_SERVICE_NAME }}'
-    )
+    print(f'Service {sut_service_name} is not defined')
+    parms  = [
+        sut_service_name,
+        sut_service_network_name
+    ]
     cursor.callproc('dbms_service.create_service', parms)
-    print('Service {{ SUT_SERVICE_NAME }} created')
-
-cursor.execute(sql)
-(network_name, service_enabled) = cursor_fetchone()
-print(f"Service '{network_name}' is ENABLED='{service_enabled}'.")
-if service_enabled == "NO":
-    parms  = (
-        '{{ SUT_SERVICE_NAME }}',
-        None
-    )
+    print(f"Service {sut_service_name} created as {sut_service_network_name}")
     cursor.callproc('dbms_service.start_service', parms)
-    print('Service {{ SUT_SERVICE_NAME }} started')
+    cursor.execute("ALTER PLUGGABLE DATABASE {{ PDBName }} SAVE STATE")
+    print(f'Service {sut_service_name} started')
+else:
+    print(f"Service {sut_service_name} is defined")
 
+cursor.close()
+conn.close()
 
-
-
+exit(0)

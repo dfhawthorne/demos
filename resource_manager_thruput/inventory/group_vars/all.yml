@@ -18,5 +18,5 @@ oracle_base:            "/opt/app/oracle"
 # Global configuration settings
 # ------------------------------------------------------------------------------
 
-SUT_SERVICE_NAME:           "demo_dural.yaocm.id.au"
+SUT_SERVICE_NAME:        "DEMO_DURAL.YAOCM.ID.AU"
 ...
