@@ -1,6 +1,8 @@
 #!/bin/python3
 # ------------------------------------------------------------------------------
 # Configures the database on the System Under Test (SUT) for use by HammerDB
+# The creation of the database service must be the last thing done as the
+# driving script bypasses this script if the database service is active.
 # ------------------------------------------------------------------------------
 
 import os
@@ -62,18 +64,42 @@ if log_mode == "NOARCHIVELOG":
     print('Database changed to ARCHIVELOG mode.')
 
 # ------------------------------------------------------------------------------
-# Define the required service name in the PDB to be used for testing
-# -------------------------------------------------------------------------------
+# Create the tablespace
+# ------------------------------------------------------------------------------
 
 cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
+sql = """
+    SELECT count(*)
+        FROM v$tablespace
+        WHERE name='{{ tpcc_tablespace_name }}'"""
+cursor.execute(sql)
+(num_ts, ) = cursor.fetchone()
+if num_ts == 0:
+    print("Tablespace {{ tpcc_tablespace_name }} does not exists.")
+    sql = """
+        CREATE BIGFILE TABLESPACE {{ tpcc_tablespace_name }}
+           DATAFILE '{{ tpcc_tablespace_name }}'
+               SIZE 100M AUTOEXTEND ON NEXT 10M MAXSIZE 100G"""
+    cursor.execute(sql)
+    print("Tablespace {{ tpcc_tablespace_name }} created.")
+else:
+    print("Tablespace {{ tpcc_tablespace_name }} exists.")
+
+# ------------------------------------------------------------------------------
+# Define the required service name in the PDB to be used for testing
+#
+# **** This must be the last step ****
+# ------------------------------------------------------------------------------
+
 sut_service_network_name = '{{ SUT_SERVICE_NAME }}'.upper()
 sut_service_name         = sut_service_network_name.split('.')[0]
-sql = f"""SELECT network_name
-  FROM dba_services
-  WHERE name='{sut_service_name}'"""
+sql = f"""
+    SELECT count(*)
+        FROM dba_services
+        WHERE name='{sut_service_name}'"""
 cursor.execute(sql)
-row = cursor.fetchone()
-if cursor.rowcount == 0:
+(num_services, ) = cursor.fetchone()
+if num_services == 0:
     print(f'Service {sut_service_name} is not defined')
     parms  = [
         sut_service_name,

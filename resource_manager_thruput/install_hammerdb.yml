@@ -204,19 +204,21 @@
   - name:               "Set path of TNSNAMES file"
     set_fact:
       tnsnames:         "{{ oracle_home }}/network/admin/tnsnames.ora"
+      tns_alias:        "{{ SUT_SERVICE_NAME.split('.')[0] }}"
 
   # ------------------- Add aliases for DEMO database
 
-  - name:               "Add DEMO_DURAL alias to TNSNAMES file"
+  - name:               "Add {{ tns_alias }} alias to TNSNAMES file"
     lineinfile:
       create:           "yes"
       group:            "{{ install_group }}"
       mode:             0644
       owner:            "oracle"
       path:             "{{ tnsnames }}"
-      regexp:           '^DEMO_DURAL\s*=\s*'
+      regexp:           '^{{ tns_alias }}\s*=\s*'
       line:             >
-        DEMO_DURAL=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dural.yaocm.id.au)
+        {{ tns_alias }} = (DESCRIPTION=
+        (ADDRESS=(PROTOCOL=TCP)(HOST={{ groups['database'][0] }})
         (PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)
         (SERVICE_NAME={{ SUT_SERVICE_NAME }})))
       insertbefore:     EOF

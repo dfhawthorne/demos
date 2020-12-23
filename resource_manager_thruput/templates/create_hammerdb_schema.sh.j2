@@ -1,0 +1,14 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Create HammerDB schema
+# https://www.hammerdb.com/docs/ch09s08.html
+# ------------------------------------------------------------------------------
+
+export ORACLE_HOME={{ oracle_home }}
+export PATH=${ORACLE_HOME}/bin:{{ hammerdb_loc }}:${PATH}
+export LD_LIBRARY_PATH=${ORACLE_HOME}/lib:${LD_LIBRARY_PATH}
+
+hammerdbcli <<DONE
+source {{ create_tpcc_schema_parms }}
+exit
+DONE

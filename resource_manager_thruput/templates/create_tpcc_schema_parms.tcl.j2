@@ -1,0 +1,12 @@
+#!/usr/bin/tclsh
+# ------------------------------------------------------------------------------
+# Sets up schema for TPC-C
+# ------------------------------------------------------------------------------
+dbset db ora
+dbset bm TPC-C
+diset connection system_password "{{ pw_all }}"
+diset connection instance "{{ SUT_SERVICE_NAME.split('.')[0] }}"
+vuset logtotemp 1
+print dict
+buildschema
+waittocomplete

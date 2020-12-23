@@ -19,4 +19,8 @@ oracle_base:            "/opt/app/oracle"
 # ------------------------------------------------------------------------------
 
 SUT_SERVICE_NAME:        "DEMO_DURAL.YAOCM.ID.AU"
+globalDBName:            "DEMOCDB19C.YAOCM.ID.AU"
+tpcc_tablespace_name:    "TPCCTAB"
+tpcc_tablespace_datafile:
+                         "{{ oracle_base }}/oradata/{{ globalDBName.split('.')[0] }}/tpcc/{{ tpcc_tablespace_name }}.dbf"
 ...

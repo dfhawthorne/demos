@@ -7,5 +7,8 @@ client_installer_loc:   "{{ nfs_loc }}/database/linuxamd64_12102/client"
 hammerdb_home:          "/home/hammer"
 hammerdb_loc:           "/usr/local/HammerDB-4.0"
 oracle_home:            "{{ oracle_base }}/product/12.1.0.2/client"
-
+create_hammerdb_schema_script:
+                        "{{ hammerdb_home }}/create_hammerdb_schema.sh"
+create_tpcc_schema_parms:
+                        "{{ hammerdb_home }}/create_tpcc_schema_parms.tcl"
 ...
