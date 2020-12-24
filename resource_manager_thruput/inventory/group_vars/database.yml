@@ -30,4 +30,5 @@ start_listener:         "{{ oracle_user_home }}/start_listener.sh"
 start_db_inst:          "{{ oracle_user_home }}/start_db_inst.py"
 shutdown_db:            "{{ oracle_user_home }}/shutdown_db.sh"
 configure_sut_db:       "{{ oracle_user_home }}/configure_sut_db.py"
+count_tpcc_objects:     "{{ oracle_user_home }}/count_tpcc_objects.py"
 ...

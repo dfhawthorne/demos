@@ -46,6 +46,7 @@
       mode:             "u+rwx"
     with_items:
       -                 "{{ configure_sut_db }}"
+      -                 "{{ count_tpcc_objects }}"
     become:             yes
     become_user:        oracle
     when:               inventory_hostname in groups['database']
@@ -87,6 +88,24 @@
     become_user:        hammer
     when:               inventory_hostname in groups['client']
 
+  - name:               "Count TPCC objects in DB for SUT"
+    command:
+      argv:
+        -               "{{ count_tpcc_objects }}"
+    become:             yes
+    become_user:        oracle
+    changed_when:       false
+    when:
+      -                 inventory_hostname in groups['database']
+    register:           count_tpcc_objects
+
+  - name:               "Output from Count TPCC objects in DB for SUT"
+    debug:
+      var:              count_tpcc_objects.stdout_lines
+      verbosity:        0
+    when:               count_tpcc_objects.stdout_lines is defined
+
+
   - name:               "Create HammerDB Schema"
     command:
       argv:
@@ -95,12 +114,15 @@
     register:           create_script_result
     become:             yes
     become_user:        hammer
-    when:               inventory_hostname in groups['client']
+    when:
+      -                 inventory_hostname in groups['client']
+      -                 count_tpcc_objects.stdout is defined
+      -                 count_tpcc_objects.stdout is search('No objects defined for TPCC.')
 
   - name:               "Output from Creation of HammerDB Schema"
     debug:
       var:              create_script_result.stdout_lines
       verbosity:        0
-    when:               create_script_result.stdout is defined
+    when:               create_script_result.stdout_lines is defined
 
 ...
