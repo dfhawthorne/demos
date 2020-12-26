@@ -24,3 +24,7 @@ Table of Contents
 - [2020-12-17](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_17.md) Prepare DB for Testing (2)
 - [2020-12-19](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_19.md) Remove Hard-Coded Hostnames
 - [2020-12-20](https://github.com/dfhawthorne/demos/blob/master/resource_manager_thruput/design_journal/2020_12_20.md) Created Group Variable Files
+- [2020-12-21](2020_12_21.md) Further work on configure SUT DB
+- [2020-12-22](2020_12_22.md) Creation of SUT Database is Idempotent
+- [2020-12-23](2020_12_23.md) HammerDB schema created
+- [2020-12-24](2020_12_24.md) Complete Build of SUT
