@@ -5,10 +5,44 @@
 
 import os
 import cx_Oracle
+import subprocess
 
 os.environ['ORACLE_BASE'] = '{{ oracle_base }}'
 os.environ['ORACLE_SID']  = '{{ SID }}'
 os.environ['ORACLE_HOME'] = '{{ oracle_home }}'
+
+oracle_bin                = '{{ oracle_home }}/bin'
+
+# ------------------------------------------------------------------------------
+# Start listener
+# ------------------------------------------------------------------------------
+
+lp                        = subprocess.Popen(                                  \
+                                [f'{oracle_bin}/lsnrctl', 'status'],           \
+                                stdout=subprocess.PIPE,                        \
+                                stderr=subprocess.PIPE                         \
+                            )
+
+lout                      = str(lp.stdout.read())
+
+if lout.find('TNS-00511: No listener') >= 0:
+    print("Start listener")
+    lp                    = subprocess.Popen(                                  \
+                                [f'{oracle_bin}/lsnrctl', 'start'],            \
+                                stdout=subprocess.PIPE,                        \
+                                stderr=subprocess.PIPE                         \
+                            )
+    lout                  = str(lp.stdout.read())
+    if lout.find("The command completed successfully") >= 0:
+        print("Listener started successfully")
+    else:
+        print(lout, file=sys.stderr)
+        exit(1)
+elif lout.find("The command completed successfully") >= 0:
+    print("Listener is running")
+else:
+    print(lout, file=sys.stderr)
+    exit(1)
 
 # ------------------------------------------------------------------------------
 # Get initial status of database instance

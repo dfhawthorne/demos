@@ -9,27 +9,12 @@
     src:              "{{ item | basename }}.j2"
     mode:             "u+rwx"
   with_items:
-    -                 "{{ start_listener }}"
     -                 "{{ start_db_inst }}"
   become:             yes
   become_user:        oracle
   when:               inventory_hostname in groups['database']
 
-- name:               "Start Oracle Listener"
-  command:
-    argv:
-      -               "{{ start_listener }}"
-  become:             yes
-  become_user:        oracle
-  when:               inventory_hostname in groups['database']
-  register:           start_listener
-
-- name:               "Status of Oracle Listener"
-  debug:
-    var:              start_listener.stdout_lines
-  when:               start_listener.stdout_lines is defined
-
-- name:               "Start Oracle Database Instance"
+- name:               "Start Oracle Database Listener and Instance"
   command:
     argv:
       -               "{{ start_db_inst }}"

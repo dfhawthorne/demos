@@ -1,16 +1,18 @@
 #!/bin/python3
 # ------------------------------------------------------------------------------
 # Configures the database on the System Under Test (SUT) for use by HammerDB
-# The creation of the database service must be the last thing done as the
-# driving script bypasses this script if the database service is active.
 # ------------------------------------------------------------------------------
 
 import os
 import cx_Oracle
+import subprocess
+from datetime import timedelta
 
 os.environ['ORACLE_BASE'] = '{{ oracle_base }}'
 os.environ['ORACLE_SID']  = '{{ SID }}'
 os.environ['ORACLE_HOME'] = '{{ oracle_home }}'
+
+oracle_bin                = '{{ oracle_home }}/bin'
 
 # ------------------------------------------------------------------------------
 # Connect to the correct container
@@ -87,17 +89,15 @@ else:
 
 # ------------------------------------------------------------------------------
 # Define the required service name in the PDB to be used for testing
-#
-# **** This must be the last step ****
 # ------------------------------------------------------------------------------
 
 sut_service_network_name = '{{ SUT_SERVICE_NAME }}'.upper()
 sut_service_name         = sut_service_network_name.split('.')[0]
-sql = f"""
+sql = """
     SELECT count(*)
         FROM dba_services
-        WHERE name='{sut_service_name}'"""
-cursor.execute(sql)
+        WHERE name=:name"""
+cursor.execute(sql, {"name": sut_service_name})
 (num_services, ) = cursor.fetchone()
 if num_services == 0:
     print(f'Service {sut_service_name} is not defined')
@@ -107,11 +107,109 @@ if num_services == 0:
     ]
     cursor.callproc('dbms_service.create_service', parms)
     print(f"Service {sut_service_name} created as {sut_service_network_name}")
+    parms  = [
+        sut_service_name,
+        None
+    ]
     cursor.callproc('dbms_service.start_service', parms)
     cursor.execute("ALTER PLUGGABLE DATABASE {{ PDBName }} SAVE STATE")
     print(f'Service {sut_service_name} started')
 else:
     print(f"Service {sut_service_name} is defined")
+
+# ------------------------------------------------------------------------------
+# Ensure that the database service is started
+# ------------------------------------------------------------------------------
+
+lsnr_proc = subprocess.Popen(                                                  \
+                [f'{oracle_bin}/lsnrctl', 'services'],                         \
+                stdout=subprocess.PIPE                                         \
+                )
+lsnr_serv = str(lsnr_proc.stdout.read())
+
+if lsnr_serv.find(sut_service_network_name) == -1:
+    parms  = [sut_service_name, None]
+    cursor.callproc('dbms_service.start_service', parms)
+    print(f'Database service ({sut_service_name}) started.')
+else:
+    print(f'Database service ({sut_service_name}) is already started.')
+
+# ------------------------------------------------------------------------------
+# Ensure AWR collection settings are correct
+# ------------------------------------------------------------------------------
+
+min_snap_interval = timedelta(days=366)
+min_retention     = timedelta(days=366)
+
+sql = """
+    SELECT
+        snap_interval,
+        retention
+    FROM
+        dba_hist_wr_control"""
+
+cursor.execute(sql)
+(snap_interval, retention) = cursor.fetchone()
+
+print(f"Current setting for snap_interval is {str(snap_interval)}")
+print(f"Current setting for retention is {str(retention)}")
+
+if min_snap_interval > snap_interval:
+    new_snap_interval = min_snap_interval.total_seconds()
+    print(f"Setting for snap_interval changed to {str(new_snap_interval)}")
+else:
+    new_snap_interval = None # Do not change current setting
+    
+if min_retention    > retention:
+    new_retention     = min_retention.total_seconds()
+    print(f"Setting for retention changed to {str(new_retention)}")
+else:
+    new_retention     = None # Do not change current setting
+
+if new_snap_interval != None or new_retention != None:
+    sql = """
+            DECLARE
+              p_RETENTION       NUMBER := :retention;
+              p_INTERVAL        NUMBER := :interval;
+              p_TOPNSQL         NUMBER := NULL;
+              p_DBID            NUMBER := NULL;
+              p_TABLESPACE_NAME VARCHAR2(128) := NULL;
+            BEGIN
+              dbms_workload_repository.MODIFY_SNAPSHOT_SETTINGS(
+                "RETENTION"       => p_RETENTION,
+                "INTERVAL"        => p_INTERVAL,
+                "TOPNSQL"         => p_TOPNSQL,
+                "DBID"            => p_DBID,
+                "TABLESPACE_NAME" => p_TABLESPACE_NAME);
+             end;"""
+    parms = {"retention": new_retention, "interval": new_snap_interval}
+    cursor.execute(sql, parms)
+    
+# ------------------------------------------------------------------------------
+# Create restore point, if needed
+# ------------------------------------------------------------------------------
+
+sql = """
+    SELECT
+        count(*)
+    FROM
+        v$restore_point
+    WHERE
+        name = '{{ original_data_rp }}'"""
+
+cursor.execute(sql)
+(num_rp, ) = cursor.fetchone()
+
+if num_rp == 0:
+    sql = "CREATE RESTORE POINT {{ original_data_rp }} GUARANTEE FLASHBACK DATABASE"
+    cursor.execute(sql)
+    print("Restore point ({{ original_data_rp }}) created.")
+else:
+    print("Restore point ({{ original_data_rp }}) already exists.")
+
+# ------------------------------------------------------------------------------
+# Clean up and exit
+# ------------------------------------------------------------------------------
 
 cursor.close()
 conn.close()

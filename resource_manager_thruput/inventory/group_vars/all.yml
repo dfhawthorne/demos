@@ -23,4 +23,6 @@ globalDBName:            "DEMOCDB19C.YAOCM.ID.AU"
 tpcc_tablespace_name:    "TPCCTAB"
 tpcc_tablespace_datafile:
                          "{{ oracle_base }}/oradata/{{ globalDBName.split('.')[0] }}/tpcc/{{ tpcc_tablespace_name }}.dbf"
+                         
+original_data_rp:        "ORIGINAL_TPCC_DATA_RP"
 ...

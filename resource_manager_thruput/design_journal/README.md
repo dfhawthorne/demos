@@ -28,4 +28,5 @@ Table of Contents
 - [2020-12-22](2020_12_22.md) Creation of SUT Database is Idempotent
 - [2020-12-23](2020_12_23.md) HammerDB schema created
 - [2020-12-24](2020_12_24.md) Complete Build of SUT
-- [2020-12-28](2020_12_28.md) Improved Idempoyency of Build of SUT
+- [2020-12-28](2020_12_28.md) Improved Idempotency of Build of SUT
+- [2020-12-19](2020_12_29.md) SUT Test Preparation

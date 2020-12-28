@@ -56,10 +56,7 @@
         -               "{{ configure_sut_db }}"
     become:             yes
     become_user:        oracle
-    when:
-      -                 inventory_hostname in groups['database']
-      -                 start_listener.stdout is defined
-      -                 start_listener.stdout is not search(SUT_SERVICE_NAME)
+    when:               inventory_hostname in groups['database']
     register:           configure_sut_db
 
   - name:               "Display output from Configure DB for SUT"
