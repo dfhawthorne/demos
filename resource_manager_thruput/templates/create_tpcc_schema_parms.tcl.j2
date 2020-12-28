@@ -2,11 +2,55 @@
 # ------------------------------------------------------------------------------
 # Sets up schema for TPC-C
 # ------------------------------------------------------------------------------
-dbset db ora
-dbset bm TPC-C
-diset connection system_password "{{ pw_all }}"
-diset connection instance "{{ SUT_SERVICE_NAME.split('.')[0] }}"
-vuset logtotemp 1
-print dict
-buildschema
-waittocomplete
+
+# ------------------------------------------------------------------
+# Test connection to Oracle database
+# The Oratcl package is loaded automatically by the hammerbcli
+# command.
+# ------------------------------------------------------------------
+
+package require Oratcl
+
+set env(ORACLE_HOME) "/opt/app/oracle/product/12.1.0.2/client"
+set instance         "{{ SUT_SERVICE_NAME.split('.')[0] }}"
+
+set lda [oralogon system/"{{ pw_all }}"@$instance]
+set sth [oraopen $lda]
+
+if {[oramsg $sth rc] == 0} {
+    puts "Successfully connected"
+} else {
+    puts stderr "Unable to connect to the database."
+    exit 1
+}
+
+# ------------------------------------------------------------------------------
+# Determine if schema for TPC-C exists
+# ------------------------------------------------------------------------------
+
+set sql {SELECT count(*) AS num_tpcc_objs FROM dba_objects WHERE owner = :owner}
+oraparse $sth $sql
+orabind  $sth :owner "TPCC"
+oraexec  $sth
+
+if {[set rc [orafetch $sth -datavariable num_tpcc_objs]] != 0} {
+    puts stderr "rc=$rc error = [oramsg $sth error]"
+    exit 1
+} else {
+    # --------------------------------------------------------------------------
+    # Sets up schema for TPC-C
+    # --------------------------------------------------------------------------
+    puts "Number of TPCC objects=$num_tpcc_objs"
+    if {$num_tpcc_objs == 0} {
+        puts "Build TPCC schema"
+        dbset db ora
+        dbset bm TPC-C
+        diset connection system_password "{{ pw_all }}"
+        diset connection instance        $insance
+        vuset logtotemp 1
+        buildschema
+        waittocomplete
+    }
+}
+
+oralogoff $lda
