@@ -1,0 +1,53 @@
+#!/usr/bin/tclsh
+# ------------------------------------------------------------------------------
+# Runs an iteration of the TPC-C performance test
+# ------------------------------------------------------------------------------
+
+{% include 'logon_oracle.tcl.inc' %}
+
+# ------------------------------------------------------------------------------
+# Determine if schema for TPC-C exists
+# ------------------------------------------------------------------------------
+
+{% include 'count_tpcc_objs.tcl.inc' %}
+
+if {$num_tpcc_objs == 0} { 
+    puts stderr "TPCC schema has not been built"
+    exit 1
+}
+
+# ------------------------------------------------------------------------------
+# Take an AWR snapshot
+# ------------------------------------------------------------------------------
+
+set awr_sql {BEGIN dbms_workload_repository.create_snapshot; END;}
+oraplexec $sth $awr_sql
+
+# ------------------------------------------------------------------------------
+# Set up Virtual Users
+# ------------------------------------------------------------------------------
+
+print vucreated
+
+diset connection instance $instance
+vuset vu 10
+vuset logtotemp 0
+loadscript
+# print script
+print vuconf
+vucreate
+vustatus
+vurun
+runtimer 600
+waittocomplete
+vudestroy
+clearscript
+
+# ------------------------------------------------------------------------------
+# Take an AWR snapshot
+# ------------------------------------------------------------------------------
+
+oraplexec $cur $awr_sql
+
+oralogoff $lda
+

@@ -46,7 +46,7 @@ if {[set rc [orafetch $sth -datavariable num_tpcc_objs]] != 0} {
         dbset db ora
         dbset bm TPC-C
         diset connection system_password "{{ pw_all }}"
-        diset connection instance        $insance
+        diset connection instance        $instance
         vuset logtotemp 1
         buildschema
         waittocomplete

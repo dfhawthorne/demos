@@ -29,4 +29,5 @@ Table of Contents
 - [2020-12-23](2020_12_23.md) HammerDB schema created
 - [2020-12-24](2020_12_24.md) Complete Build of SUT
 - [2020-12-28](2020_12_28.md) Improved Idempotency of Build of SUT
-- [2020-12-19](2020_12_29.md) SUT Test Preparation
+- [2020-12-29](2020_12_29.md) SUT Test Preparation
+- [2020-12-30](2020_12_30.md) Start Building Test Suite

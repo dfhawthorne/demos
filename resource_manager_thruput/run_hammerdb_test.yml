@@ -1,7 +1,8 @@
 ---
 # ------------------------------------------------------------------------------
-# Configure System Under Test (SUT) for use by HammerDB
+# Runs an iteration of the HammerDB performance test.
 # ------------------------------------------------------------------------------
+
 - hosts:                all
   any_errors_fatal:     true
   tasks:
@@ -21,56 +22,31 @@
       file:             "passwords/oracle.yml"
     no_log:             true
 
-  - name:               "Install required packages from repositories"
-    dnf:
-      name:
-        -               tcl
-      state:            present
-    become:             yes
-    become_user:        root
-
-  - name:               "Install required packages using PIP"
-    pip:
-      name:
-        -               "cx_Oracle"
-      state:            present
-    become:             yes
-    become_user:        root
-
   - name:               "Start Oracle Listener and Database Instance"
     include_tasks:      startup_db.yml
 
-  - name:               "Create DB Configuration Scripts"
+  - name:               "Create DB Management Scripts"
     template:
       dest:             "{{ item }}"
       src:              "{{ item | basename }}.j2"
       mode:             "u+rwx"
     with_items:
-      -                 "{{ configure_sut_db }}"
+      -                 "{{ flashback_pdb_script }}"
     become:             yes
     become_user:        oracle
     when:               inventory_hostname in groups['database']
 
-  - name:               "Configure DB for SUT"
+  - name:               "Flashback PDB back to Original TPC-C Data"
     command:
       argv:
-        -               "{{ configure_sut_db }}"
+      -                 "{{ flashback_pdb_script }}"
+    register:           test_run_result
     become:             yes
     become_user:        oracle
     when:               inventory_hostname in groups['database']
-    register:           configure_sut_db
 
-  - name:               "Display output from Configure DB for SUT"
-    debug:
-      var:              configure_sut_db.stdout_lines
-    when:               configure_sut_db.stdout_lines is defined
-
-  - name:               "Stop firewall daemon"
-    ansible.builtin.systemd:
-      name:             firewalld
-      state:            stopped
-    become:             yes
-    become_user:        root
+  - name:               "Stop play for database hosts"
+    meta:               end_host
     when:               inventory_hostname in groups['database']
 
   - name:               "Create HammerDB scripts"
@@ -80,25 +56,25 @@
       mode:             "u+rwx"
     with_items:
       -                 "{{ run_hammerdb_script }}"
-      -                 "{{ create_tpcc_schema_parms_script }}"
+      -                 "{{ run_hammerdb_test_script }}"
     become:             yes
     become_user:        hammer
     when:               inventory_hostname in groups['client']
 
-  - name:               "Create HammerDB Schema"
+  - name:               "Run an Iteration of HammerDB Performance Test"
     command:
       argv:
       -                 "{{ run_hammerdb_script }}"
-      -                 "{{ create_tpcc_schema_parms_script }}"
-    register:           create_script_result
+      -                 "{{ run_hammerdb_test_script }}"
+    register:           test_run_result
     become:             yes
     become_user:        hammer
     when:               inventory_hostname in groups['client']
 
-  - name:               "Output from Creation of HammerDB Schema"
+  - name:               "Output from HammerDB Performance Test"
     debug:
-      var:              create_script_result.stdout_lines
+      var:              test_run_result.stdout_lines
       verbosity:        0
-    when:               create_script_result.stdout_lines is defined
+    when:               test_run_result.stdout_lines is defined
 
 ...

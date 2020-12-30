@@ -1,0 +1,35 @@
+#!/bin/python3
+# ------------------------------------------------------------------------------
+# Flashback the database on the System Under Test (SUT) to the original data for
+# use by HammerDB
+# ------------------------------------------------------------------------------
+
+import os
+import cx_Oracle
+
+os.environ['ORACLE_BASE'] = '{{ oracle_base }}'
+os.environ['ORACLE_SID']  = '{{ SID }}'
+os.environ['ORACLE_HOME'] = '{{ oracle_home }}'
+
+oracle_bin                = '{{ oracle_home }}/bin'
+
+# ------------------------------------------------------------------------------
+# Connect to the correct container
+# ------------------------------------------------------------------------------
+
+conn     = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA)
+cursor   = conn.cursor()
+sql_cmds = [
+            "ALTER SESSION SET CONTAINER={{ PDBName }}",
+            "ALTER PLUGGABLE DATABASE {{ PDBName }} CLOSE IMMEDIATE",
+            """FLASHBACK PLUGGABLE DATABASE {{ PDBName }}
+                 TO RESTORE POINT {{ original_data_rp }}""",
+            "ALTER PLUGGABLE DATABASE {{ PDBName }} OPEN RESETLOGS"]
+
+for sql in sql_cmds:
+    print(sql)
+    cursor.execute(sql)
+
+cursor.close()
+conn.close()
+
