@@ -13,4 +13,6 @@ create_tpcc_schema_parms_script:
                         "{{ hammerdb_home }}/create_tpcc_schema_parms.tcl"
 run_hammerdb_test_script:
                         "{{ hammerdb_home }}/run_hammerdb_test.tcl"
+custom_load_test_script:
+                        "{{ hammerdb_home }}/custom_load.tcl"
 ...

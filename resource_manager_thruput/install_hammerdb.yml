@@ -195,16 +195,9 @@
       verbosity:        0
     when:               configToolAllCommands.stdout_lines is defined
 
-  # ------------------------------------------------------------------------------
-  # Creates and maintains the TNSNAMES file for data guard
-  #
-  # The variable 'tnsnames' must be defined
-  # ------------------------------------------------------------------------------
-
   - name:               "Set path of TNSNAMES file"
     set_fact:
       tnsnames:         "{{ oracle_home }}/network/admin/tnsnames.ora"
-      tns_alias:        "{{ SUT_SERVICE_NAME.split('.')[0] }}"
 
   # ------------------- Add aliases for DEMO database
 

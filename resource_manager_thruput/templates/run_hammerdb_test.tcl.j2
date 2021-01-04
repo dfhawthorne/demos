@@ -16,12 +16,7 @@ if {$num_tpcc_objs == 0} {
     exit 1
 }
 
-# ------------------------------------------------------------------------------
-# Take an AWR snapshot
-# ------------------------------------------------------------------------------
-
-set awr_sql {BEGIN dbms_workload_repository.create_snapshot; END;}
-oraplexec $sth $awr_sql
+oralogoff $lda
 
 # ------------------------------------------------------------------------------
 # Set up Virtual Users
@@ -29,12 +24,7 @@ oraplexec $sth $awr_sql
 
 print vucreated
 
-diset connection instance $instance
-vuset vu 10
-vuset logtotemp 0
-loadscript
-# print script
-print vuconf
+customscript '{{ custom_load_test_script }}'
 vucreate
 vustatus
 vurun
@@ -42,12 +32,4 @@ runtimer 600
 waittocomplete
 vudestroy
 clearscript
-
-# ------------------------------------------------------------------------------
-# Take an AWR snapshot
-# ------------------------------------------------------------------------------
-
-oraplexec $cur $awr_sql
-
-oralogoff $lda
 

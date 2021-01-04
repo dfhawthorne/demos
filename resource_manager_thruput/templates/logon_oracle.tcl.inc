@@ -7,7 +7,7 @@
 package require Oratcl
 
 set env(ORACLE_HOME) "/opt/app/oracle/product/12.1.0.2/client"
-set instance         "{{ SUT_SERVICE_NAME.split('.')[0] }}"
+set instance         "{{ tns_alias }}"
 
 set lda [oralogon system/"{{ pw_all }}"@$instance]
 set sth [oraopen $lda]

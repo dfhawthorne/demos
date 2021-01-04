@@ -19,6 +19,7 @@ oracle_base:            "/opt/app/oracle"
 # ------------------------------------------------------------------------------
 
 SUT_SERVICE_NAME:        "DEMO_DURAL.YAOCM.ID.AU"
+tns_alias:               "{{ SUT_SERVICE_NAME.split('.')[0] }}"
 globalDBName:            "DEMOCDB19C.YAOCM.ID.AU"
 tpcc_tablespace_name:    "TPCCTAB"
 tpcc_tablespace_datafile:

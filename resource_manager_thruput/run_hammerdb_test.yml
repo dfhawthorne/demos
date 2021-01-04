@@ -57,6 +57,7 @@
     with_items:
       -                 "{{ run_hammerdb_script }}"
       -                 "{{ run_hammerdb_test_script }}"
+      -                 "{{ custom_load_test_script }}"
     become:             yes
     become_user:        hammer
     when:               inventory_hostname in groups['client']
