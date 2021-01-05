@@ -24,7 +24,7 @@ oralogoff $lda
 
 print vucreated
 
-customscript '{{ custom_load_test_script }}'
+customscript {{ custom_load_test_script }}
 vucreate
 vustatus
 vurun
