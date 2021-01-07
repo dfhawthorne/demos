@@ -146,7 +146,9 @@ sql = """
         snap_interval,
         retention
     FROM
-        dba_hist_wr_control"""
+        dba_hist_wr_control
+    WHERE
+        src_dbname = '{{ PDBName }}'"""
 
 cursor.execute(sql)
 (snap_interval, retention) = cursor.fetchone()
