@@ -25,26 +25,6 @@
   - name:               "Start Oracle Listener and Database Instance"
     include_tasks:      startup_db.yml
 
-  - name:               "Create DB Management Scripts"
-    template:
-      dest:             "{{ item }}"
-      src:              "{{ item | basename }}.j2"
-      mode:             "u+rwx"
-    with_items:
-      -                 "{{ flashback_pdb_script }}"
-    become:             yes
-    become_user:        oracle
-    when:               inventory_hostname in groups['database']
-
-  - name:               "Flashback PDB back to Original TPC-C Data"
-    command:
-      argv:
-      -                 "{{ flashback_pdb_script }}"
-    register:           test_run_result
-    become:             yes
-    become_user:        oracle
-    when:               inventory_hostname in groups['database']
-
   - name:               "Stop play for database hosts"
     meta:               end_host
     when:               inventory_hostname in groups['database']

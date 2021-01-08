@@ -1,7 +1,7 @@
 #!/usr/local/bin/tclsh8.6
 #EDITABLE OPTIONS##################################################
 set library          Oratcl  ;  # Oracle OCI Library
-set total_iterations 1000    ;  # Number of transactions before logging off
+set total_iterations 1000000 ;  # Number of transactions before logging off
 set RAISEERROR       "false" ;  # Exit script on Oracle error (true or false)
 set KEYANDTHINK      "false" ;  # Time for user thinking and keying (true or
                                 # false)
@@ -9,7 +9,7 @@ set CHECKPOINT       "false" ;  # Perform Oracle checkpoint when complete (true
                                 # or false)
 set rampup                2;    # Rampup time in minutes before first snapshot
                                 # is taken
-set duration              5;    # Duration in minutes before second AWR
+set duration             15;    # Duration in minutes before second AWR
                                 # snapshot is taken
 set mode             "Local" ;  # HammerDB operational mode
 set timesten         "false" ;  # Database is TimesTen
