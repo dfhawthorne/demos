@@ -32,3 +32,7 @@ Table of Contents
 - [2020-12-29](2020_12_29.md) SUT Test Preparation
 - [2020-12-30](2020_12_30.md) Start Building Test Suite
 - [2021-01-04](2021_01_04.md) Custom Performance Load Script
+- [2021-01-06](2021_01_06.md) HammerDB Patching
+- [2021-01-07](2021_01_07.md) Fixed Several AWR-Related Bugs
+- [2021-01-08](2021_01_08.md) Successful load test on 1 CPU and started analysis 
+- [2021-01-09](2021_01_09.md) Successful load test on 6 CPUs and further analysis

@@ -3,18 +3,35 @@
 # Extract statistics of interest from generated AWR reports (HTML)
 # ------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+# Import required modules
+# ------------------------------------------------------------------------------
+
 try:
     from bs4 import BeautifulSoup
 except ModuleNotFoundError as ex:
     print("Run sudo pip3 install bs4")
     exit(1)
 
+try:
+    import pandas as pd
+except ModuleNotFoundError as ex:
+    print("Run sudo pip3 install pandas")
+    exit(1)
+
 import os
 import statistics
 
-awr_dir = "./awr_reports/"
-internal_plan = list()
-default_plan  = list()
+# ------------------------------------------------------------------------------
+# Load data from AWR reports
+# ------------------------------------------------------------------------------
+
+awr_dir          = "./awr_reports/"
+data             = dict()
+data['plan']     = list()
+data['num_cpus'] = list()
+data['rate']     = list()
+
 for file_name in os.listdir(awr_dir):
     with open(awr_dir + file_name) as fp:
         soup = BeautifulSoup(fp, 'html.parser')
@@ -45,12 +62,21 @@ for file_name in os.listdir(awr_dir):
                     if resource_manager_plan.strip() == '':
                         resource_manager_plan = "INTERNAL_PLAN"
                     break
-            if resource_manager_plan == "INTERNAL_PLAN":
-                internal_plan.append(rate)
-            elif resource_manager_plan == "DEFAULT_PLAN":
-                default_plan.append(rate)
-    print(f"File_name='{file_name}',Plan='{resource_manager_plan}',Num CPUs={num_cpus:2d},rate={rate:.2f}")
+            if cols[2].text.strip() == '':
+                data['plan'].append(resource_manager_plan)
+                data['num_cpus'].append(num_cpus)
+                data['rate'].append(rate)
+                print(f"File_name='{file_name}',Plan='{resource_manager_plan}',Num CPUs={num_cpus:2d},rate={rate:.2f}")
+            else:
+                print(f"File_name='{file_name}',Plan changed from '{cols[1].text}' to '{cols[2].text}' - ignored")
 
-print(f"Internal: avg={statistics.mean(internal_plan):8.2f}, sd={statistics.stdev(internal_plan):8.2f}")
-print(f"Default:  avg={statistics.mean(default_plan):8.2f}, sd={statistics.stdev(default_plan):8.2f}")
+# ------------------------------------------------------------------------------
+# Analyse data
+# ------------------------------------------------------------------------------
+
+frame = pd.DataFrame(data)
+frame.to_csv("results.csv")
+grouped = frame.groupby(['plan', 'num_cpus']).agg({'rate': ['mean', 'std']})
+grouped.columns = ['rate_avg', 'rate_sd']
+print(grouped)
 
