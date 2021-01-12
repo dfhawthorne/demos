@@ -33,6 +33,8 @@ data['num_cpus'] = list()
 data['rate']     = list()
 
 for file_name in os.listdir(awr_dir):
+    if not os.path.isfile(awr_dir + file_name):
+        continue
     with open(awr_dir + file_name) as fp:
         soup = BeautifulSoup(fp, 'html.parser')
 

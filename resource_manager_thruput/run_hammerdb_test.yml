@@ -25,8 +25,15 @@
   - name:               "Start Oracle Listener and Database Instance"
     include_tasks:      startup_db.yml
 
-  - name:               "Stop play for database hosts"
-    meta:               end_host
+  - name:               "Create Database scripts"
+    template:
+      dest:             "{{ item }}"
+      src:              "{{ item | basename }}.j2"
+      mode:             "u+rwx"
+    with_items:
+      -                 "{{ set_res_mgr_plan_script }}"
+    become:             yes
+    become_user:        oracle
     when:               inventory_hostname in groups['database']
 
   - name:               "Create HammerDB scripts"
@@ -42,20 +49,25 @@
     become_user:        hammer
     when:               inventory_hostname in groups['client']
 
-  - name:               "Run an Iteration of HammerDB Performance Test"
-    command:
-      argv:
-      -                 "{{ run_hammerdb_script }}"
-      -                 "{{ run_hammerdb_test_script }}"
-    register:           test_run_result
-    become:             yes
-    become_user:        hammer
-    when:               inventory_hostname in groups['client']
+  - name:               "Set plans"
+    set_fact:
+      plans:
+      -                 "DEFAULT_PLAN"
+      -                 "DEFAULT_PLAN"
+      -                 "DEFAULT_PLAN"
+      -                 "DEFAULT_PLAN"
+      -                 "DEFAULT_PLAN"
+      -                 "INTERNAL_PLAN"
+      -                 "INTERNAL_PLAN"
+      -                 "INTERNAL_PLAN"
+      -                 "INTERNAL_PLAN"
+      -                 "INTERNAL_PLAN"
 
-  - name:               "Output from HammerDB Performance Test"
-    debug:
-      var:              test_run_result.stdout_lines
-      verbosity:        0
-    when:               test_run_result.stdout_lines is defined
+  - name:               "Run an iteration of HammerDB load test"
+    include_tasks:      run_one_hammerdb_test.yml
+    loop_control:
+      loop_var:         res_mgr_plan
+    with_items:
+      -                 "{{ plans | shuffle }}"
 
 ...

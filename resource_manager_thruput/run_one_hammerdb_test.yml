@@ -1,0 +1,37 @@
+---
+# ------------------------------------------------------------------------------
+# Run a single iteration of a HammerDB load test
+# ------------------------------------------------------------------------------
+
+- name:               "Set resource manager plan"
+  command:
+    argv:
+    -                 "{{ set_res_mgr_plan_script }}"
+    -                 "{{ res_mgr_plan }}"
+  register:           set_res_mgr_plan_result
+  become:             yes
+  become_user:        oracle
+  when:               inventory_hostname in groups['database']
+
+- name:               "Output from setting resource manager plan"
+  debug:
+    var:              set_res_mgr_plan_result.stdout_lines
+    verbosity:        0
+  when:               set_res_mgr_plan_result.stdout_lines is defined
+
+- name:               "Run an Iteration of HammerDB Performance Test"
+  command:
+    argv:
+    -                 "{{ run_hammerdb_script }}"
+    -                 "{{ run_hammerdb_test_script }}"
+  register:           test_run_result
+  become:             yes
+  become_user:        hammer
+  when:               inventory_hostname in groups['client']
+
+- name:               "Output from HammerDB Performance Test"
+  debug:
+    var:              test_run_result.stdout_lines
+    verbosity:        0
+  when:               test_run_result.stdout_lines is defined
+...

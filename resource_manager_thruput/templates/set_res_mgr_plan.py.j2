@@ -1,0 +1,43 @@
+#!/bin/python3
+# ------------------------------------------------------------------------------
+# Sets the resource manager plan for the database on the System Under Test
+# (SUT) prior to a HammerDB test run
+# ------------------------------------------------------------------------------
+
+import os
+import cx_Oracle
+import sys
+from datetime import timedelta
+
+os.environ['ORACLE_BASE'] = '{{ oracle_base }}'
+os.environ['ORACLE_SID']  = '{{ SID }}'
+os.environ['ORACLE_HOME'] = '{{ oracle_home }}'
+
+if len(sys.argv) < 2:
+    print("Missing arguments")
+    exit(1)
+
+# ------------------------------------------------------------------------------
+# Connect to the correct container
+# ------------------------------------------------------------------------------
+
+conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA)
+cursor = conn.cursor()
+cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
+
+# ------------------------------------------------------------------------------
+# Set the correct resource manager plan
+# ------------------------------------------------------------------------------
+
+sql = f"ALTER SYSTEM SET resource_manager_plan={ sys.argv[1] }" 
+
+cursor.execute(sql)
+
+# ------------------------------------------------------------------------------
+# Clean up and exit
+# ------------------------------------------------------------------------------
+
+cursor.close()
+conn.close()
+
+exit(0)

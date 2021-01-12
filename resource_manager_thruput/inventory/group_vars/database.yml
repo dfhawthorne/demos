@@ -32,4 +32,6 @@ shutdown_db:            "{{ oracle_user_home }}/shutdown_db.sh"
 configure_sut_db:       "{{ oracle_user_home }}/configure_sut_db.py"
 count_tpcc_objects:     "{{ oracle_user_home }}/count_tpcc_objects.py"
 flashback_pdb_script:   "{{ oracle_user_home }}/flashback_pdb.py"
+set_res_mgr_plan_script:
+                        "{{ oracle_user_home }}/set_res_mgr_plan.py"
 ...
