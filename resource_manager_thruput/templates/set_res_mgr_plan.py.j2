@@ -29,9 +29,17 @@ cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
 # Set the correct resource manager plan
 # ------------------------------------------------------------------------------
 
-sql = f"ALTER SYSTEM SET resource_manager_plan={ sys.argv[1] }" 
+sql = f"ALTER SYSTEM SET resource_manager_plan='FORCE:{ sys.argv[1] }'" 
+print(sql)
 
-cursor.execute(sql)
+try:
+    cursor.execute(sql)
+except cx_Oracle.Error as e:
+    print(e)
+    rc = 1
+else:
+    print(f"Plan changed to '{ sys.argv[1] }'")
+    rc = 0
 
 # ------------------------------------------------------------------------------
 # Clean up and exit
@@ -40,4 +48,4 @@ cursor.execute(sql)
 cursor.close()
 conn.close()
 
-exit(0)
+exit(rc)

@@ -115,6 +115,18 @@ cursor.execute("select open_mode from v$pdbs where name='{{ PDBName }}'")
 
 print(f'Status of PDB ({{ PDBName }}) is {pdb_open_mode}')
 
+# ------------------------------------------------------------------------------
+# Save the state of the pluggable database, if required
+# ------------------------------------------------------------------------------
+
+cursor.execute("SELECT state FROM cdb_pdb_saved_states WHERE con_name='{{ PDBName }}'")
+(pdb_saved_state, ) = cursor.fetchone()
+if pdb_saved_state is None or pdb_saved_state != "OPEN":
+    cursor.execute("ALTER PLUGGABLE DATABASE {{ PDBName }} SAVE STATE")
+    print("PDB ({{ PDBName }}) state saved")
+else:
+    print(f"Status of PDB ({{ PDBName }}) is {pdb_saved_state}")
+
 cursor.close()
 conn.close()
 

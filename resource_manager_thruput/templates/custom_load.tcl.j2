@@ -172,6 +172,34 @@ switch $myposition {
                     }
                     set tpm $ractpm
                 }
+                # Create AWR Report directory, if needed
+                set awr_dir "~/awr_reports"
+                if {![file exists $awr_dir]} {
+                    file mkdir $awr_dir
+                }
+                # Get current DBID
+                set dbid     [expr [lindex $firstsnap 3] + 0]
+                # Generate AWR HTML report
+                set inst_id  [expr [lindex $firstsnap 0] + 0]
+                set bid      [expr [lindex $firstsnap 4] + 0] 
+                set eid      [expr [lindex $endsnap   4] + 0]
+                set filename [format "%s/awr_%d_%d_%d.html" $awr_dir $inst_id $bid $eid]
+                set awr_sql {SELECT output FROM TABLE(dbms_workload_repository.awr_report_html(:dbid,:inst,:bid,:eid))}
+                set curn_awr [oraopen $lda ]
+                oraparse $curn_awr $awr_sql
+                orabind  $curn_awr :dbid $dbid :inst $inst_id :bid $bid :eid $eid
+                if {[catch {oraexec  $curn_awr} message]} {
+                    error "Generate AWR report failed: $message"
+                } else {
+                    set fileId   [open $filename "w"]
+                    orafetch $curn_awr -datavariable output
+                    while { [ oramsg  $curn_awr ] == 0 } {
+                        puts $fileId [lindex $output 0]
+                        orafetch $curn_awr -datavariable output
+                    }
+                    close $fileId
+                }
+                oraclose $curn_awr
                 puts "[ expr $totalvirtualusers - 1 ] Active Virtual Users configured"
                 puts [ testresult $nopm $tpm Oracle ]
             }

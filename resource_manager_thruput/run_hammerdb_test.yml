@@ -25,6 +25,14 @@
   - name:               "Start Oracle Listener and Database Instance"
     include_tasks:      startup_db.yml
 
+  - name:               "Stop firewall daemon"
+    ansible.builtin.systemd:
+      name:             firewalld
+      state:            stopped
+    become:             yes
+    become_user:        root
+    when:               inventory_hostname in groups['database']
+
   - name:               "Create Database scripts"
     template:
       dest:             "{{ item }}"
