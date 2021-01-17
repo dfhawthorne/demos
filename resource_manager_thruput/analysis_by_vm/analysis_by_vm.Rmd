@@ -1,0 +1,274 @@
+---
+title: "Analysis of XEN and VirtualBox Tests"
+author: "Douglas Hawthorne"
+date: "17/01/2021"
+output:
+  html_document:
+    toc:             true
+    toc_float:       false
+    number_sections: false
+    keep_md:         true
+    fig_caption:     false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+virtualbox_data <- read.csv("coogee_results.csv")
+xen_data <- read.csv("victoria_results.csv")
+```
+
+## Summary
+
+
+## Overview
+
+Following on my earlier analysis in
+[Preliminary Analysis of the Effect of ORM Plans on Throughput](https://github.com/dfhawthorne/demos/wiki/Preliminary-Analysis-of-the-Effect-of-ORM-Plans-on-Throughput),
+I recreated the Oracle 19C database as a VM running on a Xen server. I
+did three (3) runs there:
+
+1. One (1) virtual CPU
+2. Six (6) virtual CPUs in a pool of two (2) physical CPUs
+3. Six (6) virtual CPUs in a pool of six (6) physical CPUs
+
+The second run was a happy accident.
+
+The experimental set-up is the same as described
+[here](https://github.com/dfhawthorne/demos/wiki/Preliminary-Analysis-of-the-Effect-of-ORM-Plans-on-Throughput#experimental-setup).
+
+## Host Characteristics
+
+The characteristics of each host are:
+
+| Metric                   | `COOGEE`   | `VICTORIA` |
+| ------------------------ | ---------->| ---------->|
+| Number of Physical cores | 6          |          8 |
+| CPU GHz                  |       2.80 |       3.30 |
+| CPU Model                | i5-8400    | Xeon E31245 |
+| VM Manager Name          | VirtualBox | Xen        |
+| VM Manager Version       | 6.1.10     | 3.4.4      |
+| OS Name                  | Ubuntu     | Xen        |
+| OS Version               | 20.04.01   | 3.4.4      |
+
+## Metrics Collected
+
+The original set of metrics collected was:
+
+1. Number of CPUs reported in AWR Report
+2. Elapsed time covered by AWR Report
+3. Number of executions of target SQL statement:
+
+```sql
+SELECT count(*) AS num_items FROM ITEM
+```
+
+This analysis uses an extended group of metrics from both VM servers:
+
+1. Amount of memory reported by the machine in GB
+2. Name of host platform
+3. The following rates (per second) from the _Load Profile_ in the AWR Report:
+  1. _Logical reads (blocks)_
+  2. _User calls_
+  3. _Executes (SQL)_
+4. Database ID reported in AWR Report
+5. Database instance startup time
+6. Time when AWR Snap was first taken
+
+## Summary of Data
+
+```{r data_summary}
+all_data              <- rbind(virtualbox_data, xen_data)
+all_data$plan         <- factor(all_data$plan)
+all_data$platform     <- factor(all_data$platform)
+all_data$startup_time <- factor(all_data$startup_time)
+all_data$dbid         <- factor(all_data$dbid)
+all_data$X            <- NULL
+summary(all_data)
+```
+
+## Graphical Exploration of Data
+
+```{r explore_data}
+boxplot(
+    rate~startup_time,
+    data=all_data,
+    main="SQL Execution Rate by Experimental Run",
+    xlab="Exeperimental Run",
+    ylab="SQL Execution Rate (per second)"
+    )
+
+```
+
+The experimental runs were done as follows:
+
+| Time            | VM Host    | Physical Cores |
+| --------------- | ---------- | -------------->|
+| 12-Jan-21 07:17 | `COOGEE`   |              1 |
+| 12-Jan-21 10:29 | `COOGEE`   |              6 |
+| 15-Jan-21 13:28 | `VICTORIA` |              1 |
+| 15-Jan-21 20:33 | `VICTORIA` |              2 |
+| 16-Jan-21 13:56 | `VICTORIA` |              6 |
+
+Visually, there are significant differences between experimental runs.
+The cores on `COOGEE` appear to be twice as fast as those on `VICTORIA`,
+despite the clock rate on the latter being higher than that of the
+former.
+
+## Other Response Variables
+
+Besides _rate_ (executions per second of the target SQL statement),
+other possible response variables are from the _Load Profile_ of the
+AWR reports:
+
+- _logical\_reads_
+- _user\_calls_
+- _SQL\_executes_
+
+### Logical Reads
+
+```{r logical_reads_graph}
+plot(
+    logical_reads~rate,
+    data=all_data,
+    main="Logical Reads/sec vs Target SQL Exec Rate",
+    xlab="Target SQL Execution Rate (per second)",
+    ylab="Logical Reads/second")
+
+```
+
+There appears to be a very correlation between the execution of the
+target SQL statement and the number of logical reads done. The ratio
+appears to be about 1,000 logical reads per execution of the target SQL
+statement. This matches the number of blocks in the `ITEM` table.
+
+```
+SQL> select blocks from dba_tables where table_name='ITEM';
+
+    BLOCKS
+----------
+      1126
+```
+
+### User Calls
+
+```{r user_calls_graph}
+plot(
+    user_calls~rate,
+    data=all_data,
+    main="User Calls/sec vs Target SQL Exec Rate",
+    xlab="Target SQL Execution Rate (per second)",
+    ylab="User Calls/second")
+
+```
+
+There is a strong correlation between the number of user calls and the
+number of executions of the target SQL statement. The ratio of user
+calls to targeted SQL statement executions is about two (2) to one (1).
+
+### Overall SQL Execution Rate
+
+```{r SQL_executes_graph}
+plot(
+    SQL_executes~rate,
+    data=all_data,
+    main="Total SQL Exec Rate vs Target SQL Exec Rate",
+    xlab="Target SQL Execution Rate (per second)",
+    ylab="All SQL Execution Rate (per second)")
+
+```
+
+There appears to be a one-to-one relationship between the number of
+executions of the target SQL statement and all SQL executions. I can
+safely say there is no other workload interfering with the load test on
+this PDB.
+
+### Choice of Response Variable
+
+Given that the other candidates for response variables are highly
+correlated with the one I used in the
+[Preliminary Analysis of the Effect of ORM Plans on Throughput](https://github.com/dfhawthorne/demos/wiki/Preliminary-Analysis-of-the-Effect-of-ORM-Plans-on-Throughput),
+I see no need to change it.
+
+## ANCOVA
+
+
+### Recoding Experimental Runs
+
+I need to convert the experimental run into additional factors:
+
+- _number of physical cores_
+- _server name_ - this encapsulates both the VM server type and CPU type
+
+```{r recode_exp_run}
+all_data["cores"]  = 1
+all_data["server"] = "VICTORIA"
+all_data[all_data$startup_time == "12-Jan-21 07:17", "server"] = "COOGEE" 
+all_data[all_data$startup_time == "12-Jan-21 10:29", "server"] = "COOGEE"
+all_data[all_data$startup_time == "12-Jan-21 10:29", "cores"]  = 6
+all_data[all_data$startup_time == "15-Jan-21 20:33", "cores"]  = 2
+all_data[all_data$startup_time == "16-Jan-21 13:56", "cores"]  = 6
+all_data$server = factor(all_data$server)
+summary(all_data)
+```
+
+
+### Linear Model
+
+```{r linear_model}
+all_data.lm = lm(rate~cores*server*plan,data=all_data)
+anova(all_data.lm)
+```
+
+All interactions are significant at the 5% level.
+
+### Analysis of Residuals
+
+The NULL hypothesis that the residuals in the linear model are normally
+distributed is rejected at the 1% level.
+
+```{r shapiro_wilkes}
+shapiro.test(all_data.lm$residuals)
+```
+
+This is confirmed visually with the Q-Q Plot:
+
+```{r analysis_residuals}
+par(mfrow=c(1,1))
+qqnorm(all_data.lm$residuals)
+qqline(all_data.lm$residuals,lty=2)
+```
+
+```{r residuals_and_fitted_values}
+all_data["std_residual"] = all_data.lm$residuals/sqrt(mean(all_data.lm$residuals^2))
+plot(all_data.lm$fitted.values,
+     all_data$std_residual,
+     main="Residuals vs. Fitted Values",
+     xlab="Fitted Execution Rate",
+     ylab="Standardised Residuals")
+abline(h=0, col="red")
+```
+
+### Identify Outliers
+
+```{r identify_outliers}
+all_data[abs(all_data$std_residual) > 1, c("startup_time", "server", "cores", "plan") ]
+```
+
+So the outliers are all for the experimental runs on `VICTORIA` with
+one (1) or two (2) physical cores.
+
+## VICTORIA With Small CPU Pool
+
+Since the residuals analysis identified the outliers being from the
+`VICTORIA` server with one (1) or two (2) physical cores, I am going to
+do a separate analysis of these two (2) experimental runs.
+
+```{r small_cpu_pool_lm}
+small_pool <- all_data[ (all_data$server == "VICTORIA" & all_data$cores <= 2), c("rate","plan","cores")]
+small_pool.lm <- lm(rate~plan*cores,data=small_pool)
+anova(small_pool.lm)
+```
+
+
+## Conclusion
+
