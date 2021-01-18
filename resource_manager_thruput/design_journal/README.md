@@ -36,3 +36,5 @@ Table of Contents
 - [2021-01-07](2021_01_07.md) Fixed Several AWR-Related Bugs
 - [2021-01-08](2021_01_08.md) Successful load test on 1 CPU and started analysis 
 - [2021-01-09](2021_01_09.md) Successful load test on 6 CPUs and further analysis
+- [2021-01-10](2021_01_10.md) Randomised ORM Plan Treatment
+- [2021-01-15](2021_01_15.md) Test Runs on XEN Server (Victoria)
