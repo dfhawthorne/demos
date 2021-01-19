@@ -11,11 +11,7 @@ output:
     fig_caption:     false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-virtualbox_data <- read.csv("coogee_results.csv")
-xen_data <- read.csv("victoria_results.csv")
-```
+
 
 ## Summary
 
@@ -112,7 +108,8 @@ combined. The following categories are identified:
 - `startup_time` (an abbreviation is encoded in `expr_cfg`)
 - `dbid`
 
-```{r data_summary}
+
+```r
 all_data              <- rbind(virtualbox_data, xen_data)
 all_data$platform     <- factor(all_data$platform)
 all_data$dbid         <- factor(all_data$dbid)
@@ -132,6 +129,30 @@ all_data["expr_cfg"]  <- factor(
 )
 summary(all_data)
 ```
+
+```
+##             plan       num_cpus      rate            memory     
+##  DEFAULT_PLAN :25   Min.   :1   Min.   : 413.4   Min.   :5.410  
+##  INTERNAL_PLAN:25   1st Qu.:1   1st Qu.: 877.3   1st Qu.:5.410  
+##                     Median :6   Median : 908.4   Median :5.410  
+##                     Mean   :4   Mean   :1389.0   Mean   :5.426  
+##                     3rd Qu.:6   3rd Qu.:1893.1   3rd Qu.:5.450  
+##                     Max.   :6   Max.   :2942.9   Max.   :5.450  
+##              platform  logical_reads       user_calls      SQL_executes   
+##  Linux x86 64-bit:50   Min.   : 451758   Min.   : 818.7   Min.   : 439.6  
+##                        1st Qu.: 986141   1st Qu.:1764.1   1st Qu.: 881.5  
+##                        Median :1007586   Median :1817.7   Median : 912.2  
+##                        Mean   :1554802   Mean   :2799.9   Mean   :1409.8  
+##                        3rd Qu.:2091182   3rd Qu.:3795.2   3rd Qu.:1902.7  
+##                        Max.   :3360532   Max.   :6011.7   Max.   :3006.5  
+##         dbid             startup_time  snap_time         plan_abbr expr_cfg
+##  908248820:20   12-Jan-21 07:17:10    Length:50          N:25      E1:10   
+##  987761581:30   12-Jan-21 10:29:10    Class :character   D:25      E2:10   
+##                 15-Jan-21 13:28:10    Mode  :character             E3:10   
+##                 15-Jan-21 20:33:10                                 E4:10   
+##                 16-Jan-21 13:56:10                                 E5:10   
+## 
+```
 __Note__: There is a slight difference in memory allocated between the
 VMs between __COOGEE__ and __VICTORIA__.
 
@@ -142,7 +163,8 @@ use the database start-up time to identify the experimental
 configuration. I use the same response variable (`rate`) as I used in
 the preliminary analysis.
 
-```{r explore_data}
+
+```r
 boxplot(
     rate~plan_abbr*expr_cfg,
     data=all_data,
@@ -150,8 +172,9 @@ boxplot(
     xlab="ORM Plan and Experimental Configuration",
     ylab="SQL Execution Rate (per second)"
     )
-
 ```
+
+![](analysis_by_vm_files/figure-html/explore_data-1.png)
 
 Four (4) experimental configurations have very low variances. The
 second configuration (_E2_) shows a relatively large difference in
@@ -192,15 +215,17 @@ AWR reports:
 
 ### Logical Reads
 
-```{r logical_reads_graph}
+
+```r
 plot(
     logical_reads~rate,
     data=all_data,
     main="Logical Reads/sec vs Target SQL Exec Rate",
     xlab="Target SQL Execution Rate (per second)",
     ylab="Logical Reads/second")
-
 ```
+
+![](analysis_by_vm_files/figure-html/logical_reads_graph-1.png)
 
 There appears to be a very correlation between the execution of the
 target SQL statement and the number of logical reads done. The ratio
@@ -217,15 +242,17 @@ SQL> select blocks from dba_tables where table_name='ITEM';
 
 ### User Calls
 
-```{r user_calls_graph}
+
+```r
 plot(
     user_calls~rate,
     data=all_data,
     main="User Calls/sec vs Target SQL Exec Rate",
     xlab="Target SQL Execution Rate (per second)",
     ylab="User Calls/second")
-
 ```
+
+![](analysis_by_vm_files/figure-html/user_calls_graph-1.png)
 
 There is a strong correlation between the number of user calls and the
 number of executions of the target SQL statement. The ratio of user
@@ -233,15 +260,17 @@ calls to targeted SQL statement executions is about two (2) to one (1).
 
 ### Overall SQL Execution Rate
 
-```{r SQL_executes_graph}
+
+```r
 plot(
     SQL_executes~rate,
     data=all_data,
     main="Total SQL Exec Rate vs Target SQL Exec Rate",
     xlab="Target SQL Execution Rate (per second)",
     ylab="All SQL Execution Rate (per second)")
-
 ```
+
+![](analysis_by_vm_files/figure-html/SQL_executes_graph-1.png)
 
 There appears to be a one-to-one relationship between the number of
 executions of the target SQL statement and all SQL executions. I can
@@ -266,7 +295,8 @@ variables:
 - _number of physical cores_
 - _server name_ - this encapsulates both the VM server type and CPU type
 
-```{r recode_exp_run}
+
+```r
 all_data["cores"]  = 1
 all_data["server"] = "VICTORIA"
 all_data[all_data$startup_time == "12-Jan-21 07:17", "server"] = "COOGEE" 
@@ -276,6 +306,37 @@ all_data[all_data$startup_time == "15-Jan-21 20:33", "cores"]  = 2
 all_data[all_data$startup_time == "16-Jan-21 13:56", "cores"]  = 6
 all_data$server = factor(all_data$server)
 summary(all_data)
+```
+
+```
+##             plan       num_cpus      rate            memory     
+##  DEFAULT_PLAN :25   Min.   :1   Min.   : 413.4   Min.   :5.410  
+##  INTERNAL_PLAN:25   1st Qu.:1   1st Qu.: 877.3   1st Qu.:5.410  
+##                     Median :6   Median : 908.4   Median :5.410  
+##                     Mean   :4   Mean   :1389.0   Mean   :5.426  
+##                     3rd Qu.:6   3rd Qu.:1893.1   3rd Qu.:5.450  
+##                     Max.   :6   Max.   :2942.9   Max.   :5.450  
+##              platform  logical_reads       user_calls      SQL_executes   
+##  Linux x86 64-bit:50   Min.   : 451758   Min.   : 818.7   Min.   : 439.6  
+##                        1st Qu.: 986141   1st Qu.:1764.1   1st Qu.: 881.5  
+##                        Median :1007586   Median :1817.7   Median : 912.2  
+##                        Mean   :1554802   Mean   :2799.9   Mean   :1409.8  
+##                        3rd Qu.:2091182   3rd Qu.:3795.2   3rd Qu.:1902.7  
+##                        Max.   :3360532   Max.   :6011.7   Max.   :3006.5  
+##         dbid             startup_time  snap_time         plan_abbr expr_cfg
+##  908248820:20   12-Jan-21 07:17:10    Length:50          N:25      E1:10   
+##  987761581:30   12-Jan-21 10:29:10    Class :character   D:25      E2:10   
+##                 15-Jan-21 13:28:10    Mode  :character             E3:10   
+##                 15-Jan-21 20:33:10                                 E4:10   
+##                 16-Jan-21 13:56:10                                 E5:10   
+##                                                                            
+##      cores          server  
+##  Min.   :1.0   COOGEE  :20  
+##  1st Qu.:1.0   VICTORIA:30  
+##  Median :2.0                
+##  Mean   :3.2                
+##  3rd Qu.:6.0                
+##  Max.   :6.0
 ```
 
 
@@ -288,9 +349,27 @@ between them:
 2. `server`
 3. `plan`
 
-```{r linear_model}
+
+```r
 all_data.lm = lm(rate~cores*server*plan,data=all_data)
 anova(all_data.lm)
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: rate
+##                   Df   Sum Sq  Mean Sq   F value  Pr(>F)    
+## cores              1 31364232 31364232 6746.8794 < 2e-16 ***
+## server             1  4389110  4389110  944.1582 < 2e-16 ***
+## plan               1    32045    32045    6.8933 0.01202 *  
+## cores:server       1   823604   823604  177.1687 < 2e-16 ***
+## cores:plan         1    23430    23430    5.0402 0.03009 *  
+## server:plan        1    20863    20863    4.4879 0.04009 *  
+## cores:server:plan  1    30479    30479    6.5565 0.01413 *  
+## Residuals         42   195245     4649                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
 All interactions are significant at the 5% level as all of the following
@@ -310,24 +389,37 @@ rate;
 The NULL hypothesis that the residuals in the linear model are normally
 distributed is rejected at the 5% level.
 
-```{r shapiro_wilkes}
+
+```r
 shapiro.test(all_data.lm$residuals)
+```
+
+```
+## 
+## 	Shapiro-Wilk normality test
+## 
+## data:  all_data.lm$residuals
+## W = 0.90722, p-value = 0.0008391
 ```
 
 This is confirmed visually with the Q-Q Plot:
 
-```{r analysis_residuals}
+
+```r
 par(mfrow=c(1,1))
 qqnorm(all_data.lm$residuals)
 qqline(all_data.lm$residuals,lty=2)
 ```
+
+![](analysis_by_vm_files/figure-html/analysis_residuals-1.png)
 
 There is a very large deviation from the expected normal distribution of
 residuals. Let's see where these deviations are where in the
 experimental data by plotting the residuals against the fitted values
 for the response variable (`rate`):
 
-```{r residuals_and_fitted_values}
+
+```r
 all_data["std_residual"] = all_data.lm$residuals/sqrt(mean(all_data.lm$residuals^2))
 plot(all_data.lm$fitted.values,
      all_data$std_residual,
@@ -339,13 +431,40 @@ abline(h=1, col="blue")
 abline(h=-1, col="blue")
 ```
 
+![](analysis_by_vm_files/figure-html/residuals_and_fitted_values-1.png)
+
 ### Identify Outliers
 
 From the above graph, the outliers are identified by standardised
 residuals being more than one (1) or less than -1. 
 
-```{r identify_outliers}
+
+```r
 all_data[abs(all_data$std_residual) > 1, c("startup_time", "server", "cores", "plan") ]
+```
+
+```
+##       startup_time   server cores          plan
+## 21 15-Jan-21 20:33 VICTORIA     2  DEFAULT_PLAN
+## 23 15-Jan-21 20:33 VICTORIA     2 INTERNAL_PLAN
+## 26 15-Jan-21 13:28 VICTORIA     1 INTERNAL_PLAN
+## 27 15-Jan-21 13:28 VICTORIA     1  DEFAULT_PLAN
+## 28 15-Jan-21 13:28 VICTORIA     1 INTERNAL_PLAN
+## 29 15-Jan-21 13:28 VICTORIA     1  DEFAULT_PLAN
+## 30 15-Jan-21 13:28 VICTORIA     1  DEFAULT_PLAN
+## 32 15-Jan-21 13:28 VICTORIA     1 INTERNAL_PLAN
+## 33 15-Jan-21 13:28 VICTORIA     1  DEFAULT_PLAN
+## 34 15-Jan-21 20:33 VICTORIA     2  DEFAULT_PLAN
+## 37 15-Jan-21 13:28 VICTORIA     1  DEFAULT_PLAN
+## 38 15-Jan-21 20:33 VICTORIA     2 INTERNAL_PLAN
+## 39 15-Jan-21 20:33 VICTORIA     2 INTERNAL_PLAN
+## 40 15-Jan-21 13:28 VICTORIA     1 INTERNAL_PLAN
+## 41 15-Jan-21 20:33 VICTORIA     2  DEFAULT_PLAN
+## 42 15-Jan-21 20:33 VICTORIA     2  DEFAULT_PLAN
+## 46 15-Jan-21 20:33 VICTORIA     2 INTERNAL_PLAN
+## 47 15-Jan-21 13:28 VICTORIA     1 INTERNAL_PLAN
+## 48 15-Jan-21 20:33 VICTORIA     2  DEFAULT_PLAN
+## 50 15-Jan-21 20:33 VICTORIA     2 INTERNAL_PLAN
 ```
 
 So the outliers are all for the experimental runs on `VICTORIA` with
@@ -363,11 +482,31 @@ experimental runs that are outliers use a CPU pool size of two (2). With
 the addition of the `pool_size` factor, I can replace the `cores` factor
 with the `num_cpus` factor as `cores = min(num_cpus,pool_size)`.
 
-```{r small_cpu_pool_lm}
+
+```r
 all_data$pool_size <- 6
 all_data[ (all_data$server == "VICTORIA" & all_data$cores <= 2), "pool_size"] <- 2
 pool_data.lm = lm(rate~num_cpus*server*plan*pool_size,data=all_data)
 anova(pool_data.lm)
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: rate
+##                      Df   Sum Sq  Mean Sq   F value    Pr(>F)    
+## num_cpus              1 17523941 17523941 86241.663 < 2.2e-16 ***
+## server                1 11705557 11705557 57607.287 < 2.2e-16 ***
+## plan                  1    32045    32045   157.704 1.843e-15 ***
+## pool_size             1  2117760  2117760 10422.265 < 2.2e-16 ***
+## num_cpus:server       1  5416268  5416268 26655.416 < 2.2e-16 ***
+## num_cpus:plan         1     8642     8642    42.530 8.748e-08 ***
+## server:plan           1    31615    31615   155.587 2.289e-15 ***
+## plan:pool_size        1     4409     4409    21.697 3.497e-05 ***
+## num_cpus:server:plan  1    30645    30645   150.817 3.762e-15 ***
+## Residuals            40     8128      203                        
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
 __Note__: Not all possible combinations are included in the linear
@@ -389,18 +528,30 @@ This could be the result of overfitting.
 The NULL hypothesis that the residuals in the linear model are normally
 distributed is rejected at the 5% level.
 
-```{r extended_shapiro_wilkes}
+
+```r
 shapiro.test(pool_data.lm$residuals)
+```
+
+```
+## 
+## 	Shapiro-Wilk normality test
+## 
+## data:  pool_data.lm$residuals
+## W = 0.94622, p-value = 0.0239
 ```
 
 The Q-Q Plot shows substantional deviations from the normal
 deviations from the normal distribution for the residuals:
 
-```{r extended_analysis_residuals}
+
+```r
 par(mfrow=c(1,1))
 qqnorm(pool_data.lm$residuals)
 qqline(pool_data.lm$residuals,lty=2)
 ```
+
+![](analysis_by_vm_files/figure-html/extended_analysis_residuals-1.png)
 
 There is a very large deviation from the expected normal distribution of
 residuals. There are possibly between three (3) and six (6) outliers
@@ -411,7 +562,8 @@ Let's see where these deviations are where in the
 experimental data by plotting the residuals against the fitted values
 for the response variable (`rate`):
 
-```{r extended_residuals_and_fitted_values}
+
+```r
 all_data["pool_std_residual"] = pool_data.lm$residuals/sqrt(mean(pool_data.lm$residuals^2))
 plot(pool_data.lm$fitted.values,
      all_data$pool_std_residual,
@@ -423,13 +575,24 @@ abline(h=2, col="blue")
 abline(h=-2, col="blue")
 ```
 
+![](analysis_by_vm_files/figure-html/extended_residuals_and_fitted_values-1.png)
+
 ### Identify Outliers in Extended Model
 
 From the above graph, the outliers are identified by standardised
 residuals being more than two (2) or less than -2. 
 
-```{r identify_outliers_in_ext_model}
+
+```r
 all_data[abs(all_data$pool_std_residual) > 2, c("startup_time", "server", "num_cpus", "plan") ]
+```
+
+```
+##       startup_time server num_cpus          plan
+## 7  12-Jan-21 10:29 COOGEE        6  DEFAULT_PLAN
+## 8  12-Jan-21 07:17 COOGEE        1 INTERNAL_PLAN
+## 10 12-Jan-21 07:17 COOGEE        1 INTERNAL_PLAN
+## 17 12-Jan-21 10:29 COOGEE        6 INTERNAL_PLAN
 ```
 These four (4) outliers are all from the `COOGEE` server.
 
@@ -447,9 +610,23 @@ squares in the ANCOVA:
 ### ANCOVA for Simple Model
 
 Let's look at this simpler model:
-```{r simple_model_lm}
+
+```r
 simple.lm <- lm(rate ~ cores*server, data=all_data)
 anova(simple.lm)
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: rate
+##              Df   Sum Sq  Mean Sq F value    Pr(>F)    
+## cores         1 31364232 31364232 4776.34 < 2.2e-16 ***
+## server        1  4389110  4389110  668.40 < 2.2e-16 ***
+## cores:server  1   823604   823604  125.42 9.831e-15 ***
+## Residuals    46   302063     6567                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
 All factors and interactions are significant.
@@ -459,18 +636,30 @@ All factors and interactions are significant.
 The NULL hypothesis that the residuals in the linear model are normally
 distributed is rejected at the 5% level.
 
-```{r simple_shapiro_wilkes}
+
+```r
 shapiro.test(simple.lm$residuals)
+```
+
+```
+## 
+## 	Shapiro-Wilk normality test
+## 
+## data:  simple.lm$residuals
+## W = 0.91059, p-value = 0.001096
 ```
 
 The Q-Q Plot shows substantional deviations from the normal
 deviations from the normal distribution for the residuals:
 
-```{r simple_analysis_residuals}
+
+```r
 par(mfrow=c(1,1))
 qqnorm(simple.lm$residuals)
 qqline(simple.lm$residuals,lty=2)
 ```
+
+![](analysis_by_vm_files/figure-html/simple_analysis_residuals-1.png)
 
 There is a very large deviation from the expected normal distribution of
 residuals. There are a large number of outliers
@@ -481,7 +670,8 @@ Let's see where these deviations are where in the
 experimental data by plotting the residuals against the fitted values
 for the response variable (`rate`):
 
-```{r simple_residuals_and_fitted_values}
+
+```r
 all_data["simple_std_residual"] <- simple.lm$residuals/sqrt(mean(simple.lm$residuals^2))
 plot(simple.lm$fitted.values,
      all_data$simple_std_residual,
@@ -493,13 +683,24 @@ abline(h=1.5, col="blue")
 abline(h=-1.5, col="blue")
 ```
 
+![](analysis_by_vm_files/figure-html/simple_residuals_and_fitted_values-1.png)
+
 ### Identify Outliers in Simple Model
 
 From the above graph, the outliers are identified by standardised
 residuals being more than 1.5 or less than -1.5. 
 
-```{r identify_outliers_in_simple}
+
+```r
 all_data[abs(all_data$simple_std_residual) > 1.5, c("startup_time", "server", "cores", "plan") ]
+```
+
+```
+##       startup_time   server cores          plan
+## 7  12-Jan-21 10:29   COOGEE     6  DEFAULT_PLAN
+## 13 12-Jan-21 10:29   COOGEE     6 INTERNAL_PLAN
+## 39 15-Jan-21 20:33 VICTORIA     2 INTERNAL_PLAN
+## 46 15-Jan-21 20:33 VICTORIA     2 INTERNAL_PLAN
 ```
 
 ## Conclusion
