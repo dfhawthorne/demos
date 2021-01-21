@@ -1,0 +1,170 @@
+---
+title: "Quick Analysis of Servers with 6 Core Pools"
+author: "Douglas Hawthorne"
+date: "21/01/2021"
+output:
+  html_document:
+    toc:             true
+    toc_float:       false
+    number_sections: false
+    keep_md:         true
+    fig_caption:     false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+virtualbox_data <- read.csv("coogee_results.csv")
+xen_data        <- read.csv("victoria_results.csv")
+extra_xen_data  <- read.csv("victoria_2_results.csv")
+```
+
+## Summary
+
+I have analysed the model with the experimental configuration restricted
+to VMs running in a fixed pool of six (6) physical cores. Strangely
+enough, the models improved with only three (3) outliers identified.
+
+These outliers are due to the `INTERNAL_PLAN`. This makes some sense as
+this plan exhibits the greatest variance in experimental results.
+
+I do not understand why having a small CPU pool would impact results so
+much.
+
+## Overview
+
+This analysis follows on from
+"[Analysis of XEN and VirtualBox Tests](https://github.com/dfhawthorne/demos/wiki/Analysis-of-XEN-and-VirtualBox-Tests)".
+I ran an extra round of load tests with the size of the CPU pool set to
+six (6).
+
+## Initial Analysis of Data
+
+I have excluded any load test runs that were done on experimental
+configurations that had less than six (6) physical cores:
+
+```{r all_data_summary}
+all_data               <- rbind(
+  virtualbox_data,
+  xen_data,
+  extra_xen_data)
+all_data$platform      <- factor(all_data$platform)
+all_data$dbid          <- factor(all_data$dbid)
+all_data$plan          <- factor(all_data$plan)
+all_data$X             <- NULL
+all_data["server"]     <- "VICTORIA"
+all_data[all_data$startup_time == "12-Jan-21 07:17", "server"] <- "COOGEE" 
+all_data[all_data$startup_time == "12-Jan-21 10:29", "server"] <- "COOGEE"
+all_data$server        <- factor(all_data$server)
+all_data["plan_abbr"]  <- factor(
+  all_data$plan,
+  c("INTERNAL_PLAN", "DEFAULT_PLAN"),
+  labels=c("N", "D")
+)
+only_6_core_pools      <- all_data$startup_time != "15-Jan-21 13:28" &
+                          all_data$startup_time != "15-Jan-21 20:33"
+core_data              <- all_data[only_6_core_pools, ]
+core_data$startup_time <- factor(core_data$startup_time)
+core_data["expr_cfg"]  <- factor(
+  core_data$startup_time,
+  c("12-Jan-21 07:17","12-Jan-21 10:29","16-Jan-21 13:56",
+    "18-Jan-21 08:36","18-Jan-21 11:52"),
+  labels=c("E1","E2","E3","E4","E5")
+)
+summary(core_data)
+```
+
+## Graphical Exploration of Data
+
+Since I need to have the VM shut down before reconfiguring the VM, I can
+use the database start-up time to identify the experimental
+configuration. I use the same response variable (`rate`) as I used in
+the preliminary analysis.
+
+```{r explore_data}
+boxplot(
+    rate~plan_abbr*expr_cfg,
+    data=core_data,
+    main="SQL Exec Rate by ORM Plan and Exp Config",
+    xlab="ORM Plan and Experimental Configuration",
+    ylab="SQL Execution Rate (per second)"
+    )
+
+```
+
+The experimental configurations were done as follows:
+
+| Time            | Abbr | VM Host    | Physical Cores |
+| --------------- | ---- | ---------- | -------------- |
+| 12-Jan-21 07:17 | E1   | `COOGEE`   |              1 |
+| 12-Jan-21 10:29 | E2   | `COOGEE`   |              6 |
+| 16-Jan-21 13:56 | E3   | `VICTORIA` |              6 |
+| 18-Jan-21 08:36 | E4   | `VICTORIA` |              6 |
+| 18-Jan-21 11:52 | E5   | `VICTORIA` |              1 |
+
+
+### Linear Model
+
+Let's consider a three (3) factor model with all possible interactions
+between them:
+
+1. `num_cpus`
+2. `server`
+3. `plan`
+
+```{r linear_model}
+core_data.lm = lm(rate~num_cpus*server*plan,data=core_data)
+anova(core_data.lm)
+```
+
+All interactions are significant.
+
+
+### Analysis of Residuals
+
+The NULL hypothesis that the residuals in the linear model are normally
+distributed is rejected at the 5% level.
+
+```{r shapiro_wilkes}
+shapiro.test(core_data.lm$residuals)
+```
+
+This is confirmed visually with the Q-Q Plot:
+
+```{r analysis_residuals}
+par(mfrow=c(1,1))
+qqnorm(core_data.lm$residuals)
+qqline(core_data.lm$residuals,lty=2)
+```
+
+There is a very large deviation from the expected normal distribution of
+residuals at one end of the distribution that could be caused by one (1)
+or two (2) outliers. Let's see where these deviations are where in the
+experimental data by plotting the residuals against the fitted values
+for the response variable (`rate`):
+
+```{r residuals_and_fitted_values}
+core_data["std_residual"] = core_data.lm$residuals/sqrt(mean(core_data.lm$residuals^2))
+plot(core_data.lm$fitted.values,
+     core_data$std_residual,
+     main="Residuals vs. Fitted Values",
+     xlab="Fitted Execution Rate",
+     ylab="Standardised Residuals")
+abline(h=0, col="red")
+abline(h=2, col="blue")
+abline(h=-2, col="blue")
+```
+
+### Identify Outliers
+
+From the above graph, the outliers are identified by standardised
+residuals being more than two (2) or less than -2. 
+
+```{r identify_outliers}
+core_data[abs(core_data$std_residual) > 2, c("startup_time", "server", "num_cpus", "plan") ]
+```
+
+## Model Results
+
+```{r model_results}
+summary(core_data.lm)
+```
