@@ -1,0 +1,51 @@
+---
+# ------------------------------------------------------------------------------
+# Runs the Custom HammerDB test with plan changes on the CDB rather than on the
+# PDB.
+# ------------------------------------------------------------------------------
+
+- hosts:                all
+  any_errors_fatal:     true
+  tasks:
+
+  - name:               "Set global variables for CDB-based tests"
+    set_fact:
+      tns_system_alias: "root_dural"
+      target_container: "CDB$ROOT"
+      tnsnames:         "{{ oracle_home }}/network/admin/tnsnames.ora"
+
+  - name:               "Create TNS alias for {{ tns_system_alias }}"
+    lineinfile:
+      create:           "yes"
+      group:            "{{ install_group }}"
+      mode:             0644
+      owner:            "oracle"
+      path:             "{{ tnsnames }}"
+      regexp:           '^{{ tns_system_alias }}\s*=\s*'
+      line:             >
+        {{ tns_system_alias }} = (DESCRIPTION=
+        (ADDRESS=(PROTOCOL=TCP)(HOST={{ groups['database'][0] }})
+        (PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)
+        (SERVICE_NAME={{ globalDBName }})))
+      insertbefore:     EOF
+    become:             yes
+    become_user:        oracle
+    when:               inventory_hostname in groups['client']
+
+  - name:               "Set plans"
+    set_fact:
+      plans:
+      -                 "DEFAULT_CDB_PLAN"
+      -                 "DEFAULT_CDB_PLAN"
+      -                 "DEFAULT_CDB_PLAN"
+      -                 "DEFAULT_CDB_PLAN"
+      -                 "DEFAULT_CDB_PLAN"
+      -                 "INTERNAL_PLAN"
+      -                 "INTERNAL_PLAN"
+      -                 "INTERNAL_PLAN"
+      -                 "INTERNAL_PLAN"
+      -                 "INTERNAL_PLAN"
+
+  - name:               "Run original load test"
+    import_tasks:       run_hammerdb_test_common.yml
+...

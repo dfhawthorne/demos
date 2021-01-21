@@ -13,7 +13,11 @@ set duration             15;    # Duration in minutes before second AWR
                                 # snapshot is taken
 set mode             "Local" ;  # HammerDB operational mode
 set timesten         "false" ;  # Database is TimesTen
-set systemconnect system/{{ pw_all }}@{{ tns_alias }};
+{% if tns_system_alias is defined %}
+set systemconnect system/{{ pw_all }}@{{ tns_system_alias }}
+{% else %}
+set systemconnect system/{{ pw_all }}@{{ tns_alias }}
+{% endif %}
                                 # Oracle connect string for system user
 set connect tpcc/tpcc@{{ tns_alias }};
                                 # Oracle connect string for tpc-c user

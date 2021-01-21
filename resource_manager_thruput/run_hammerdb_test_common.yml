@@ -1,0 +1,63 @@
+---
+# ------------------------------------------------------------------------------
+# Runs an iteration of the HammerDB performance test.
+# ------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Load passwords from passwords/oracle.yml which has the following variables:
+# * pw_all
+# * pw_sys
+# * pw_system
+# * pw_pdbadmin
+#
+# >>>>>>> This file is deliberately NOT included in the GIT repository <<<<<<<
+# ----------------------------------------------------------------------------
+
+- name:                 "Load passwords"
+  include_vars:
+    file:               "passwords/oracle.yml"
+  no_log:               true
+
+- name:                 "Start Oracle Listener and Database Instance"
+  include_tasks:        startup_db.yml
+
+- name:                 "Stop firewall daemon"
+  ansible.builtin.systemd:
+    name:               firewalld
+    state:              stopped
+  become:               yes
+  become_user:          root
+  when:                 inventory_hostname in groups['database']
+
+- name:                 "Create Database scripts"
+  template:
+    dest:               "{{ item }}"
+    src:                "{{ item | basename }}.j2"
+    mode:               "u+rwx"
+  with_items:
+    -                   "{{ set_res_mgr_plan_script }}"
+  become:               yes
+  become_user:          oracle
+  when:                 inventory_hostname in groups['database']
+
+- name:                 "Create HammerDB scripts"
+  template:
+    dest:               "{{ item }}"
+    src:                "{{ item | basename }}.j2"
+    mode:               "u+rwx"
+  with_items:
+    -                   "{{ run_hammerdb_script }}"
+    -                   "{{ run_hammerdb_test_script }}"
+    -                   "{{ custom_load_test_script }}"
+  become:               yes
+  become_user:          hammer
+  when:                 inventory_hostname in groups['client']
+
+- name:                 "Run an iteration of HammerDB load test"
+  include_tasks:        run_one_hammerdb_test.yml
+  loop_control:
+    loop_var:           res_mgr_plan
+  with_items:
+    -                   "{{ plans | shuffle }}"
+
+...

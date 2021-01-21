@@ -2,6 +2,9 @@
 # ------------------------------------------------------------------------------
 # Sets the resource manager plan for the database on the System Under Test
 # (SUT) prior to a HammerDB test run
+#
+# Parameters:
+#  1: Name of plan
 # ------------------------------------------------------------------------------
 
 import os
@@ -23,7 +26,11 @@ if len(sys.argv) < 2:
 
 conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA)
 cursor = conn.cursor()
+{% if target_container is defined %}
+cursor.execute("ALTER SESSION SET CONTAINER={{ target_container }}")
+{% else %}
 cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
+{% endif %}
 
 # ------------------------------------------------------------------------------
 # Set the correct resource manager plan
