@@ -1,0 +1,69 @@
+---
+title: "CDB Load Test Analysis"
+author: "Douglas Hawthorne"
+date: "27/01/2021"
+output:
+  html_document:
+    toc:             true
+    toc_float:       false
+    number_sections: false
+    keep_md:         true
+    fig_caption:     false
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+coogee_data   <- read_csv("coogee_results.csv")
+victoria_data <- read_csv("victoria_results.csv")
+cdb_data      <- bind_rows(coogee_data, victoria_data)
+```
+
+## Summary
+
+
+## Overview
+
+## Summary of Collected Data
+
+```{r expr.df}
+expr.df <-
+  cdb_data %>%
+    mutate_at(vars(plan, dbid, startup_time), as.factor) %>%
+    group_by(startup_time) %>%
+    mutate(test_run = dense_rank(snap_time)) %>%
+    select(
+      plan,
+      num_cpus,
+      rate,
+      dbid,
+      startup_time,
+      test_run
+    )
+summary(expr.df)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r expr_plot}
+expr.df %>%
+  ggplot() +
+    aes(x=test_run, y=rate, color=plan, shape=dbid) +
+    geom_point() +
+    scale_y_continuous(
+      name   = "Target SQL Executions/sec",
+      breaks = seq(0,3500,500)
+      ) +
+    scale_x_discrete(
+      name   = "Test Run #",
+      breaks = seq(1,10,2)
+      )
+```
+
+
+
