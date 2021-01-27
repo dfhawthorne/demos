@@ -39,3 +39,4 @@ Table of Contents
 - [2021-01-10](2021_01_10.md) Randomised ORM Plan Treatment
 - [2021-01-15](2021_01_15.md) Test Runs on XEN Server (Victoria)
 - [2021-01-22](2021_01_22.md) Convert to CDB Plans
+- [2021-01-24](2021_01_24.md) Fixing Issues with CDB Load Test

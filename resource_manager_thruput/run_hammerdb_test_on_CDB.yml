@@ -40,11 +40,11 @@
       -                 "DEFAULT_CDB_PLAN"
       -                 "DEFAULT_CDB_PLAN"
       -                 "DEFAULT_CDB_PLAN"
-      -                 "INTERNAL_PLAN"
-      -                 "INTERNAL_PLAN"
-      -                 "INTERNAL_PLAN"
-      -                 "INTERNAL_PLAN"
-      -                 "INTERNAL_PLAN"
+      -                 "ORA$INTERNAL_CDB_PLAN"
+      -                 "ORA$INTERNAL_CDB_PLAN"
+      -                 "ORA$INTERNAL_CDB_PLAN"
+      -                 "ORA$INTERNAL_CDB_PLAN"
+      -                 "ORA$INTERNAL_CDB_PLAN"
 
   - name:               "Run original load test"
     import_tasks:       run_hammerdb_test_common.yml

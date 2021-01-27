@@ -27,6 +27,9 @@ if len(sys.argv) < 2:
 conn   = cx_Oracle.connect("/", mode=cx_Oracle.SYSDBA)
 cursor = conn.cursor()
 {% if target_container is defined %}
+cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
+sql = f"ALTER SYSTEM SET resource_manager_plan='FORCE:INTERNAL_PLAN'" 
+print(sql)
 cursor.execute("ALTER SESSION SET CONTAINER={{ target_container }}")
 {% else %}
 cursor.execute("ALTER SESSION SET CONTAINER={{ PDBName }}")
