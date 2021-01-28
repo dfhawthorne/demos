@@ -1,7 +1,7 @@
 ---
-title: "CDB Load Test Analysis"
-author: "Douglas Hawthorne"
-date: "27/01/2021"
+title:               "CDB Load Test Analysis"
+author:              "Douglas Hawthorne"
+date:                "27/01/2021"
 output:
   html_document:
     toc:             true
@@ -9,7 +9,9 @@ output:
     number_sections: false
     keep_md:         true
     fig_caption:     false
-
+bibliography:        "CDB_Load_Test_Analysis.bibtex"
+nocite: |
+  @crawley2007r, @montgomery2017design
 ---
 
 ```{r setup, include=FALSE}
@@ -17,43 +19,114 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
-coogee_data   <- read_csv("coogee_results.csv")
-victoria_data <- read_csv("victoria_results.csv")
-cdb_data      <- bind_rows(coogee_data, victoria_data)
 ```
 
-## Summary
+# Summary
 
 
-## Overview
+# Overview
+
+# Load Experimental Data
+
+A description of how the experimental data was collected can be found
+in **Appendix 1**. This appendix also explains the reason for culling
+of some experimental data.
+
+```{r load_expr_data}
+csv.1    <- read_csv("coogee_results.csv") %>%
+              mutate(host = "COOGEE", source = "CDB")
+# Remove experimental results for num_cpus > CPU pool size
+csv.2    <- read_csv("victoria_results.csv") %>%
+              filter(num_cpus == 1) %>%
+              mutate(host = "VICTORIA", source = "CDB")
+csv.3    <- read_csv("victoria_2_results.csv") %>%
+              mutate(host = "VICTORIA", source = "CDB")
+csv.4    <- read_csv("../analysis_by_vm/coogee_results.csv") %>%
+              mutate(host = "COOGEE", source = "PDB")
+# Remove experimental results for num_cpus > CPU pool size
+csv.5    <- read_csv("../analysis_by_vm/victoria_results.csv") %>%
+              filter(startup_time != "15-Jan-21 20:33") %>%
+              mutate(host = "VICTORIA", source = "PDB")
+csv.6    <- read_csv("../analysis_by_vm/victoria_2_results.csv") %>%
+              mutate(host = "VICTORIA", source = "PDB")
+raw_data <- bind_rows(csv.1, csv.2, csv.3, csv.4, csv.5, csv.6)
+```
+
+
+## Remove Correlation Among Explanatory Variables
+
+The explanatory variables are:
+
+- Host (__host__)
+- Number of Cores (__num\_cpus__)
+- Oracle Resource Manager Plan Used (__plan__)
+- Source of AWR statistics (__source__)
+
+Only one (1) of these (__num\_cpus__) is a continuous variable. All
+of the others are categorical.
+
+However, there is correlation between two (2) of those categorical
+variables:
+
+1. Oracle Resource Manager Plan Used (__plan__)
+1. Source of AWR statistics (__source__)
+
+The plan names are different between the CDB and PDB. This correlation
+needs to be removed. These plans indicate whether the Oracle Resource
+Manager is active or not:
+
+| Plan                  | ORM Active? | CDB or PDB ? |
+| --------------------- | ----------- | ------------ |
+| DEFAULT_CDB_PLAN      | Yes         | CDB          |
+| DEFAULT_PLAN          | Yes         | PDB          |
+| INTERNAL_PLAN         | No          | PDB          |
+| ORA$INTERNAL_CDB_PLAN | No          | CDB          |
+
+By introducing a new explanatory variable (__orm\_active__), I can
+remove this correlation between explanatory variables.
 
 ## Summary of Collected Data
 
+I am introducing a new variable called __test\_run__ which indicates
+the ordinal number of the test within a suite of tests run against a
+certain configuration (these configurations are identified by
+__startup\_time__ - see **Appendix 1** for further details).
+
 ```{r expr.df}
 expr.df <-
-  cdb_data %>%
-    mutate_at(vars(plan, dbid, startup_time), as.factor) %>%
+  raw_data %>%
+    mutate_at(vars(plan, dbid, startup_time, host, source), as.factor) %>%
     group_by(startup_time) %>%
     mutate(test_run = dense_rank(snap_time)) %>%
+    mutate(
+      orm_active = factor(
+        ifelse(
+          plan %in% c("INTERNAL_PLAN","ORA$INTERNAL_CDB_PLAN"),
+          "N",
+          "Y"),
+        levels=c("N","Y"),
+        labels=c("No","Yes")
+        )) %>%
     select(
-      plan,
+      host,
+      source,
       num_cpus,
-      rate,
-      dbid,
+      orm_active,
+      test_run,
       startup_time,
-      test_run
+      rate
     )
 summary(expr.df)
 ```
 
-## Including Plots
+## Plot of Experimental Data
 
-You can also embed plots, for example:
+The experimental data is plotted as follows:
 
 ```{r expr_plot}
 expr.df %>%
   ggplot() +
-    aes(x=test_run, y=rate, color=plan, shape=dbid) +
+    aes(x=test_run, y=rate, color=orm_active, shape=host, size=num_cpus) +
     geom_point() +
     scale_y_continuous(
       name   = "Target SQL Executions/sec",
@@ -65,5 +138,144 @@ expr.df %>%
       )
 ```
 
+From the above graph, there are four (4) distinct bands. Point to note
+are:
+
+- Increasing the number of CPUs increases the SQL execution rate. This
+is expected.
+- The CPU power available on `COOGEE` is about twice that on `VICTORIA`.
+This is expected as `COOGEE` is a newer machine.
+- For three (3) of the bands, there is no obvious difference in the
+SQL execution rate when ORM is active. This is in line with the result
+from @shallahammer2020a.
+- The top band shows a clear delineation between the rates achieved with
+ORM active or not. Having ORM active decreases the rate achieved. This
+contradicts the result seen in @hawthorne2019a.
+- The order in which the tests are run do not seem to have any
+noticeable effect.
+
+# Model
+
+```{r model}
+orm.glm <- glm(
+  rate ~ source / host / num_cpus / orm_active,
+  data = expr.df
+)
+anova(orm.glm)
+```
+
+```{r lm_summary}
+summary(orm.glm)
+```
+
+## Residuals
+
+```{r residuals}
+y_hat <- predict(orm.glm)
+run_residuals <- orm.glm$residuals / sqrt(sum(orm.glm$residuals^2))
+ggplot() +
+  aes(x=y_hat,y=run_residuals) +
+  geom_point()
+```
+
+```{r qqplot}
+qqnorm(run_residuals)
+qqline(run_residuals)
+```
+
+## Look for Outliers
+
+```{r outliers}
+#influence.measures(orm.lm)$is.inf
+lm.influence(orm.lm)
+```
 
 
+# Appendix 1: Experimental Configuration
+
+I used two (2) different hosts (`COOGEE` and `VICTORIA`) running two (2)
+different Virtual Machine (VM) Managers (Hypervisors). I ran a series of tests
+that randomly changed the Oracle Resource Manager (ORM) plan in the
+pluggable database (PDB) and measured the execution rate of a certain SQL
+statement (target SQL). Each of these series were against different number of
+cores assigned to the VM image. I then repeated these series of tests by
+randomly changing the ORM plan in the container database (CDB).
+
+## Host Characteristics
+
+The characteristics of each host are:
+
+| Metric                   | `COOGEE`   | `VICTORIA`  |
+| ------------------------ | ---------- | ----------- |
+| Number of Physical cores | 6          |           8 |
+| CPU GHz                  |       2.80 |        3.30 |
+| CPU Model                | i5-8400    | Xeon E31245 |
+| VM Manager Name          | VirtualBox | Xen         |
+| VM Manager Version       | 6.1.10     | 3.4.4       |
+| OS Name                  | Ubuntu     | Xen         |
+| OS Version               | 20.04.01   | 3.4.4       |
+
+## Experimental Configurations
+
+The experimental configurations were done as follows:
+
+| Start Up Time   | VM Host    | Physical Cores | PDB/CDB |
+| --------------- | ---------- | -------------- | ------- |
+| 12-Jan-21 07:17 | `COOGEE`   |              1 | PDB     |
+| 12-Jan-21 10:29 | `COOGEE`   |              6 | PDB     |
+| 15-Jan-21 13:28 | `VICTORIA` |              1 | PDB     |
+| 15-Jan-21 20:33 | `VICTORIA` |              2 | PDB     |
+| 16-Jan-21 13:56 | `VICTORIA` |              6 | PDB     |
+| 18-Jan-21 08:36 | `VICTORIA` |              6 | PDB     |
+| 18-Jan-21 11:52 | `VICTORIA` |              1 | PDB     |
+| 22-Jan-21 14:28 | `VICTORIA` |              1 | CDB     |
+| 24-Jan-21 12:14 | `VICTORIA` |              2 | CDB     |
+| 24-Jan-21 15:50 | `COOGEE`   |              6 | CDB     |
+| 24-Jan-21 20:45 | `COOGEE`   |              1 | CDB     |
+| 28-Jan-21 08:42 | `VICTORIA` |              6 | CDB     |
+
+The experimental data collected for the following database instance startup
+times were excluded from the statistical because the size of the CPU core
+pool allocated to the VM was smaller than the number of virtual cores
+allocated to the VM:
+
+1. 15-Jan-21 20:33
+1. 24-Jan-21 12:14
+
+## Target SQL
+
+The CPU intensive SQL statement is a simple table scan of the `ITEMS`
+table in the `TPCC` schema:
+```sql
+SELECT count(*) FROM tpcc.items;
+```
+
+## Metrics Collected
+
+The following metrics from both VM servers using data from the AWR reports:
+
+1. Number of CPUs reported in AWR Report (__num\_cpus__);
+1. Number of executions per second of the target SQL statement (__rate__);
+1. Amount of memory reported by the machine in GB (__memory__);
+1. Name of host platform (__host__);
+1. Name of the Oracle Resource Manager (ORM) plan used during load test (__plan__);
+1. The following rates (per second) from the _Load Profile_ in the AWR Report:
+  1. _Logical reads (blocks)_ (__logical\_reads__)
+  1. _User calls_ (__user\_calls__)
+  1. _Executes (SQL)_ (__SQL\_executes__)
+1. Database ID reported in AWR Report (__dbid__);
+1. Database instance startup time (__startup\_time__);
+1. Time when AWR Snap was first taken (__snap\_time__);
+1. Where the ORM plan was set (_PDB_ or _CDB_) (__source__).
+
+## Other Response Variables
+
+Besides _rate_ (executions per second of the target SQL statement),
+other possible response variables are from the _Load Profile_ of the
+AWR reports:
+
+- _logical\_reads_
+- _user\_calls_
+- _SQL\_executes_
+
+# References
