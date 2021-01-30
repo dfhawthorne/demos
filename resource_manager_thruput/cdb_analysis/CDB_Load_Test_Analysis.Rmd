@@ -17,8 +17,6 @@ nocite: |
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(dplyr)
-library(ggplot2)
 ```
 
 # Summary
@@ -135,7 +133,16 @@ expr.df %>%
     scale_x_discrete(
       name   = "Test Run #",
       breaks = seq(1,10,2)
-      )
+      ) +
+    geom_hline(yintercept= 400, color="orchid",      linetype="dotted") +
+    geom_hline(yintercept= 600, color="orchid",      linetype="dotted") +
+    geom_hline(yintercept= 750, color="hotpink",     linetype="dotted") +
+    geom_hline(yintercept= 950, color="hotpink",     linetype="dotted") +
+    geom_hline(yintercept=1700, color="green",       linetype="dotted") +
+    geom_hline(yintercept=2000, color="green",       linetype="dotted") +
+    geom_hline(yintercept=2550, color="deepskyblue", linetype="dotted") +
+    geom_hline(yintercept=2800, color="deepskyblue", linetype="dotted") +
+    geom_hline(yintercept=3000, color="deepskyblue", linetype="dotted")
 ```
 
 From the above graph, there are four (4) distinct bands. Point to note
@@ -156,16 +163,18 @@ noticeable effect.
 
 # Model
 
+@crawley2007r9 says:
+
+> __aov__ fits analysis of variance with normal errors, constant variance and
+> the identity link; generally used for categorical explanatory variables or
+> ANCOVA with a mix of categorical and continuous explanatory variables.
+
 ```{r model}
-orm.glm <- glm(
+orm.aov <- aov(
   rate ~ source / host / num_cpus / orm_active,
   data = expr.df
 )
-anova(orm.glm)
-```
-
-```{r lm_summary}
-summary(orm.glm)
+summary(orm.aov)
 ```
 
 ## Residuals
@@ -192,6 +201,8 @@ lm.influence(orm.lm)
 
 
 # Appendix 1: Experimental Configuration
+
+## Overview
 
 I used two (2) different hosts (`COOGEE` and `VICTORIA`) running two (2)
 different Virtual Machine (VM) Managers (Hypervisors). I ran a series of tests
@@ -277,5 +288,23 @@ AWR reports:
 - _logical\_reads_
 - _user\_calls_
 - _SQL\_executes_
+
+# Appendix 2: Experimental Design
+
+## Overview
+
+## Literature Review
+
+There were two (2) experiments known to me that compared the effect of using
+Oracle Resource Manager (ORM) to manage Oracle database processes under hign
+CPU load:
+
+1. @hawthorne2019a in which I found, for a single replicate, that ORM improved
+throughput by about 13%;
+1. @shallahammer2020a found that there was no different in throughput whether
+ORM was active or not. This was also a single replicate experiment.
+
+
+
 
 # References
