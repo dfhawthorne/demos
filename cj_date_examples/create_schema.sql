@@ -4,7 +4,8 @@
 
 CREATE USER cj_date_examples NO AUTHENTICATION;
 
-CREATE SCHEMA AUTHORIZATION cj_date_examples
+ALTER SESSION SET current_schema=cj_date_examples;
+
   CREATE TABLE suppliers (
     sno
       CHAR(02)
@@ -18,7 +19,7 @@ CREATE SCHEMA AUTHORIZATION cj_date_examples
     city
       VARCHAR2(10)
       CONSTRAINT suppliers_city_nn NOT NULL
-    )
+    );
   CREATE TABLE parts (
     pno
       CHAR(02)
@@ -34,8 +35,8 @@ CREATE SCHEMA AUTHORIZATION cj_date_examples
       CONSTRAINT parts_weight_nn NOT NULL,
     city
       VARCHAR2(10)
-      CONSTRAINT suppliers_city_nn NOT NULL
-    )
+      CONSTRAINT parts_city_nn NOT NULL
+    );
   CREATE TABLE shipments (
     sno
       CHAR(02)
@@ -48,10 +49,11 @@ CREATE SCHEMA AUTHORIZATION cj_date_examples
     qty
       NUMBER(3,0)
       CONSTRAINT shipments_qty_nn NOT NULL,
-    CONSTRAINT PRIMARY KEY( sno, pno )
-    )
-  GRANT ALL ON suppliers TO demo
-  GRANT ALL ON parts TO demo
-  GRANT ALL ON shipments TO demo
-;
+    CONSTRAINT shipments_pk PRIMARY KEY( sno, pno )
+    );
+  GRANT ALL ON suppliers TO demo;
+  GRANT ALL ON parts TO demo;
+  GRANT ALL ON shipments TO demo;
+  
+  ALTER USER cj_date_examples QUOTA UNLIMITED ON users;
 
