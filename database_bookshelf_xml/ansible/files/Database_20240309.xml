@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<library>
+  <list_title>Database</list_title>
+  <blurb></blurb>
+  <url>https://books.google.com.au/books?uid=*************&amp;as_coll=****</url>
+  <books>
+    <book>
+      <id>G9AJA91PL54C</id>
+      <url>https://books.google.com.au/books?id=G9AJA91PL54C</url>
+      <title>Oracle Core: Essential Internals for DBAs and Developers</title>
+      <contributor>Jonathan Lewis</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1430239549</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>45fR_OeonfMC</id>
+      <url>https://books.google.com.au/books?id=45fR_OeonfMC</url>
+      <title>Effective Oracle by Design</title>
+      <contributor>Thomas Kyte</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0072230657</value>
+      </identifier>
+      <labels>
+        <label>Oracle</label>
+        <label>Database</label>
+      </labels>
+    </book>
+    <book>
+      <id>1Aqw6mrxz5AC</id>
+      <url>https://books.google.com.au/books?id=1Aqw6mrxz5AC</url>
+      <title>Expert Oracle Exadata</title>
+      <contributor>Kerry Osborne, Randy Johnson, Tanel Põder</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1430233923</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>lA3QygAACAAJ</id>
+      <url>https://books.google.com.au/books?id=lA3QygAACAAJ</url>
+      <title>Seven Databases in Seven Weeks: A Guide to Modern Databases and the NoSQL Movement</title>
+      <contributor>Eric Redmond, Jim R. Wilson</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1934356921</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>-0QPlh0stXAC</id>
+      <url>https://books.google.com.au/books?id=-0QPlh0stXAC</url>
+      <title>Data Architecture: From Zen to Reality</title>
+      <contributor>Charles Tupper</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0123851270</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>t9ZQAAAAMAAJ</id>
+      <url>https://books.google.com.au/books?id=t9ZQAAAAMAAJ</url>
+      <title>Practical Issues in Database Management: A Reference for the Thinking Practitioner</title>
+      <contributor>Fabian Pascal</contributor>
+      <labels />
+    </book>
+    <book>
+      <id>2dsUS-64JmIC</id>
+      <url>https://books.google.com.au/books?id=2dsUS-64JmIC</url>
+      <title>Fundamentals of Data Base Systems</title>
+      <contributor>S.M. Deen</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0333197399</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>g5lLCV2mCnwC</id>
+      <url>https://books.google.com.au/books?id=g5lLCV2mCnwC</url>
+      <title>Object-oriented Databases</title>
+      <contributor>John G. Hughes</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0136298745</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>r1OpkDVDDmwC</id>
+      <url>https://books.google.com.au/books?id=r1OpkDVDDmwC</url>
+      <title>Beginning Database Design: From Novice to Professional</title>
+      <contributor>Clare Churcher</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1590597699</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>grTubz0fjSEC</id>
+      <url>https://books.google.com.au/books?id=grTubz0fjSEC</url>
+      <title>Temporal Data &amp; the Relational Model</title>
+      <contributor>C.J. Date, Hugh Darwen, Nikos A. Lorentzos, Nikos Lorentzos</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1558608559</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>FU7uuHc3oNcC</id>
+      <url>https://books.google.com.au/books?id=FU7uuHc3oNcC</url>
+      <title>Database in Depth: Relational Theory for Practitioners</title>
+      <contributor>C.J. Date</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0596100124</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>X85QAAAAMAAJ</id>
+      <url>https://books.google.com.au/books?id=X85QAAAAMAAJ</url>
+      <title>Databases, Types and the Relational Model: The Third Manifesto</title>
+      <contributor>C. J. Date, Hugh Darwen</contributor>
+      <labels />
+    </book>
+    <book>
+      <id>rdBQAAAAMAAJ</id>
+      <url>https://books.google.com.au/books?id=rdBQAAAAMAAJ</url>
+      <title>Foundation for Object/relational Databases: The Third Manifesto : a Detailed Study of the Impact of Objects and Type Theory on the Relational Model of Data Including a Comprehensive Proposal for Type Inheritance</title>
+      <contributor>C. J. Date, Hugh Darwen</contributor>
+      <labels />
+    </book>
+    <book>
+      <id>suhSAAAAMAAJ</id>
+      <url>https://books.google.com.au/books?id=suhSAAAAMAAJ</url>
+      <title>The Database Hacker&apos;s Handbook: Defending Database Servers</title>
+      <contributor>David Litchfield, Chris Anley, John Heasman, Bill Grindlay</contributor>
+      <labels>
+        <label>Database</label>
+        <label>Security</label>
+      </labels>
+    </book>
+    <book>
+      <id>OhNBJ8_wMLwC</id>
+      <url>https://books.google.com.au/books?id=OhNBJ8_wMLwC</url>
+      <title>The Oracle Hacker&apos;s Handbook: Hacking and Defending Oracle</title>
+      <contributor>David Litchfield</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0470080221</value>
+      </identifier>
+      <labels>
+        <label>Oracle</label>
+        <label>Database</label>
+        <label>Security</label>
+      </labels>
+    </book>
+    <book>
+      <id>2egNzTk871wC</id>
+      <url>https://books.google.com.au/books?id=2egNzTk871wC</url>
+      <title>Logic and Databases: The Roots of Relational Theory</title>
+      <contributor>C. J. Date</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1425122906</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>Relational Theory</label>
+        <label>Logic</label>
+      </labels>
+    </book>
+    <book>
+      <id>2ImPFP6Yk64C</id>
+      <url>https://books.google.com.au/books?id=2ImPFP6Yk64C</url>
+      <title>Oracle Database 10g Linux Administration</title>
+      <contributor>Edward Whalen</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0072230533</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>Oracle</label>
+        <label>Linux</label>
+      </labels>
+    </book>
+    <book>
+      <id>-uYZcnEt4uQC</id>
+      <url>https://books.google.com.au/books?id=-uYZcnEt4uQC</url>
+      <title>Applied Mathematics for Database Professionals</title>
+      <contributor>Lex deHaan, Toon Koppelaars</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>143020348X</value>
+      </identifier>
+      <labels>
+        <label>SQL</label>
+        <label>Database</label>
+        <label>Relational Theory</label>
+      </labels>
+    </book>
+    <book>
+      <id>TD5eibhYyd8C</id>
+      <url>https://books.google.com.au/books?id=TD5eibhYyd8C</url>
+      <title>HOWTO Secure and Audit Oracle 10g and 11g</title>
+      <contributor>Ron Ben-Natan</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1420084135</value>
+      </identifier>
+      <labels>
+        <label>Oracle</label>
+        <label>Security</label>
+        <label>Database</label>
+      </labels>
+    </book>
+    <book>
+      <id>v43VNrxWo70C</id>
+      <url>https://books.google.com.au/books?id=v43VNrxWo70C</url>
+      <title>Pro SQL Server Disaster Recovery</title>
+      <contributor>James Luetkehoelter</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1590599675</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>SQL Server</label>
+      </labels>
+    </book>
+    <book>
+      <id>y_eVBB5qdwMC</id>
+      <url>https://books.google.com.au/books?id=y_eVBB5qdwMC</url>
+      <title>Date on Database: Writings 2000-2006</title>
+      <contributor>Christopher Date</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1430203498</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>406_pJtiJ6sC</id>
+      <url>https://books.google.com.au/books?id=406_pJtiJ6sC</url>
+      <title>SQL and Relational Theory: How to Write Accurate SQL Code</title>
+      <contributor>C.J. Date</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0596555423</value>
+      </identifier>
+      <labels>
+        <label>SQL</label>
+        <label>Database</label>
+        <label>Relational Theory</label>
+      </labels>
+    </book>
+    <book>
+      <id>dOYPtfVqS_MC</id>
+      <url>https://books.google.com.au/books?id=dOYPtfVqS_MC</url>
+      <title>SQL Tuning: Generating Optimal Execution Plans</title>
+      <contributor>Dan Tow</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>059655236X</value>
+      </identifier>
+      <labels />
+    </book>
+    <book>
+      <id>yK9wRfYX9nkC</id>
+      <url>https://books.google.com.au/books?id=yK9wRfYX9nkC</url>
+      <title>SQL Server Query Performance Tuning Distilled</title>
+      <contributor>Sajal Dam</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1590594215</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>SQL Server</label>
+      </labels>
+    </book>
+    <book>
+      <id>RRsHc7iXcyAC</id>
+      <url>https://books.google.com.au/books?id=RRsHc7iXcyAC</url>
+      <title>OCP Oracle Database 11g New Features for Administrators Exam Guide (Exam 1Z0-050)</title>
+      <contributor>Sam R. Alapati</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0071643729</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>Oracle</label>
+        <label>Exam Guide</label>
+      </labels>
+    </book>
+    <book>
+      <id>GjYTbJTIr54C</id>
+      <url>https://books.google.com.au/books?id=GjYTbJTIr54C</url>
+      <title>Pro Oracle Database 10g RAC on Linux: Installation, Administration, and Performance</title>
+      <contributor>Steve Shaw, Julian Dyke</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1590595246</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>Oracle</label>
+        <label>Linux</label>
+      </labels>
+    </book>
+    <book>
+      <id>EmvWP1vgTsYC</id>
+      <url>https://books.google.com.au/books?id=EmvWP1vgTsYC</url>
+      <title>Oracle Essentials: Oracle Database 11g</title>
+      <contributor>Rick Greenwald, Robert Stackowiak, Jonathan Stern</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>0596555334</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>Oracle</label>
+      </labels>
+    </book>
+    <book>
+      <id>3aEIIqRHkY8C</id>
+      <url>https://books.google.com.au/books?id=3aEIIqRHkY8C</url>
+      <title>Oracle Database 10g RMAN Backup &amp; Recovery</title>
+      <contributor>Matthew Hart, Robert G. Freeman</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>007170695X</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>Oracle</label>
+      </labels>
+    </book>
+    <book>
+      <id>TmPoYfpeJAUC</id>
+      <url>https://books.google.com.au/books?id=TmPoYfpeJAUC</url>
+      <title>Expert Oracle Database Architecture: 9i and 10g Programming Techniques and Solutions</title>
+      <contributor>Thomas Kyte</contributor>
+      <identifier>
+        <type>ISBN</type>
+        <value>1430200677</value>
+      </identifier>
+      <labels>
+        <label>Database</label>
+        <label>Oracle</label>
+      </labels>
+    </book>
+  </books>
+</library>

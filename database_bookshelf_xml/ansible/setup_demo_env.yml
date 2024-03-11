@@ -1,0 +1,122 @@
+---
+# ------------------------------------------------------------------------------
+# Sets up an XE database for the demonstration of using an XML document which
+# was downloaded from a Google Books bookself.
+# ------------------------------------------------------------------------------
+
+- hosts:                XE
+  tasks:
+
+  # ----------------------------------------------------------------------------
+  # Create XML directory
+  # ----------------------------------------------------------------------------
+
+  - name:               "Set global variables"
+    ansible.builtin.set_fact:
+      xml_dir:          "/opt/oracle/xml"
+      db_bookself_src:  "Database_20240309.xml"
+      books_user:       "DB_BOOKS"
+      books_pw:         "Change_after_install"
+      pdb_name:         "XEPDB1"
+    
+  - name:               "Create XML Directory on O/S"
+    ansible.builtin.file:
+      path:             "{{ xml_dir }}"
+      state:            directory
+    become:             yes
+    become_user:        oracle
+
+  - name:               "Create XML Directory on Database"
+    ansible.builtin.script:
+      cmd:              scripts/create_xml_dir.sh "{{ xml_dir }}" "{{ pdb_name }}"
+    register:           create_xml_dir
+    changed_when:       create_xml_dir.stdout is search("Directory 'XML_DIR' created in database.")
+    become:             yes
+    become_user:        oracle
+
+  - name:               "Display Output From Create XML Directory on Database"
+    ansible.builtin.debug:
+      var:              create_xml_dir.stdout_lines
+    when:
+      -                 create_xml_dir.changed
+      -                 create_xml_dir.stdout_lines is defined
+
+  # ----------------------------------------------------------------------------
+  # Create database user
+  # ----------------------------------------------------------------------------
+
+  - name:               "Create Database User"
+    ansible.builtin.script:
+      cmd:              scripts/create_db_user.sh "{{ books_user }}" "{{ books_pw }}" "{{ pdb_name }}"
+    register:           create_db_user
+    changed_when: >
+          create_db_user.stdout is search("User '{{ books_user }}' created in database.") or
+          create_db_user.stdout is search("User '{{ books_user }}' granted")
+    become:             yes
+    become_user:        oracle
+
+  - name:               "Display Output From Create Database User"
+    ansible.builtin.debug:
+      var:              create_db_user.stdout_lines
+    when:
+      -                 create_db_user.changed
+      -                 create_db_user.stdout_lines is defined
+
+  # ----------------------------------------------------------------------------
+  # Create external table for XML
+  # ----------------------------------------------------------------------------
+
+  - name:               "Copy XML File"
+    ansible.builtin.copy:
+      dest:             "{{ xml_dir }}/"
+      src:              "{{ db_bookself_src }}"
+    become:             yes
+    become_user:        oracle
+
+  - name:               "Create External Table"
+    ansible.builtin.script:
+      cmd:              scripts/create_ext_table.sh "{{ books_user }}" "{{ pdb_name }}" "{{ db_bookself_src }}"
+    register:           create_ext_table
+    changed_when:       create_ext_table.stdout is search("Table 'DATABASE_BOOKSHELF_EXT' created in database.")
+    become:             yes
+    become_user:        oracle
+
+  - name:               "Display Output From Create External Table"
+    ansible.builtin.debug:
+      var:              create_ext_table.stdout_lines
+    when:
+      -                 create_ext_table.changed
+      -                 create_ext_table.stdout_lines is defined
+
+  # ----------------------------------------------------------------------------
+  # Create CONTRIBUTOR PL/SQL Package for extracting individual contributors
+  # ----------------------------------------------------------------------------
+
+  - name:               "Copy SQL Files"
+    ansible.builtin.copy:
+      dest:             "/home/oracle"
+      src:              "{{ item }}"
+    become:             yes
+    become_user:        oracle
+    loop:
+      - contributor_pkg.sql
+      - contributor_pkg_body.sql
+
+  - name:               "Create PL/SQL Package"
+    ansible.builtin.script:
+      cmd:              scripts/create_plsql_package.sh "{{ books_user }}" "{{ pdb_name }}"
+    register:           create_plsql_package
+    changed_when: >
+                        create_plsql_package.stdout is search("Package 'CONTRIBUTOR_PKG' created in database.") or
+                        create_plsql_package.stdout is search("Package Body 'CONTRIBUTOR_PKG' created in database.")
+    become:             yes
+    become_user:        oracle
+
+  - name:               "Display Output From Create PL/SQL Package"
+    ansible.builtin.debug:
+      var:              create_plsql_package.stdout_lines
+    when:
+      -                 create_ext_table.changed
+      -                 create_ext_table.stdout_lines is defined
+
+...
