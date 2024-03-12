@@ -1,0 +1,92 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="9AD53795-5408-A46C-AFEE-1CEDDD396CA2" schemaObject="0DA39B44-6EFB-1BF5-2822-D33A875C24B8" name="BOOKS">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>DB_BOOKS</sourceObjSchema>
+<sourceObjName>BOOKS</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<typeID>4</typeID>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<materializedQueryTable>true</materializedQueryTable>
+<parsed>true</parsed>
+<userDefinedSQL><![CDATA[SELECT
+      b.ID,
+      b.title,
+      b.url,
+      b.isbn
+  FROM
+    database_bookshelf_ext e,
+    XMLTABLE ( '/books/book'
+            PASSING xmltype(e.object_value)
+        COLUMNS
+            "ID" VARCHAR2(16) PATH 'id',
+            url VARCHAR2(512) PATH 'url',
+            title VARCHAR2(1024) PATH 'title',
+            contributer VARCHAR2(1024) PATH 'contributor',
+            isbn VARCHAR2(16) PATH 'identifier/value'
+    )                      b]]></userDefinedSQL>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="ID" id="42ADF494-E7F1-CF97-BE80-642BA086A674">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>BOOKS</sourceObjSchema>
+<sourceObjName>ID</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>16 BYTE</dataTypeSize>
+<ownDataTypeParameters>16 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="TITLE" id="CF39B7EC-FEC5-2FB1-F494-FC23D15138BD">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>BOOKS</sourceObjSchema>
+<sourceObjName>TITLE</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>1024 BYTE</dataTypeSize>
+<ownDataTypeParameters>1024 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="URL" id="EE4B739A-8D73-B115-5880-8627E63078E9">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>BOOKS</sourceObjSchema>
+<sourceObjName>URL</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>512 BYTE</dataTypeSize>
+<ownDataTypeParameters>512 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="ISBN" id="25413625-91FB-6307-B0C4-7D0B838E75AA">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>BOOKS</sourceObjSchema>
+<sourceObjName>ISBN</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>16 BYTE</dataTypeSize>
+<ownDataTypeParameters>16 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+</Table>

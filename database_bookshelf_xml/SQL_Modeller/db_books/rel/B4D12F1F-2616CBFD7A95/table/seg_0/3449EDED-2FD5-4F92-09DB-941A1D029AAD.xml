@@ -1,0 +1,64 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="3449EDED-2FD5-4F92-09DB-941A1D029AAD" schemaObject="0DA39B44-6EFB-1BF5-2822-D33A875C24B8" name="BOOK_LABELS">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>DB_BOOKS</sourceObjSchema>
+<sourceObjName>BOOK_LABELS</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<typeID>4</typeID>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<materializedQueryTable>true</materializedQueryTable>
+<parsed>true</parsed>
+<userDefinedSQL><![CDATA[SELECT
+      l.ID,
+      l.label
+  FROM
+    database_bookshelf_ext e,
+  XMLTABLE (
+    'for $i in /books/book/labels/label
+      return <row>
+        {
+          $i/../../id,
+          $i
+        }
+      </row>'
+    PASSING xmltype(e.object_value)
+    COLUMNS
+      "ID" VARCHAR2(16) PATH 'id',
+      label VARCHAR2(32) PATH 'label'
+    ) l]]></userDefinedSQL>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="ID" id="773D43DE-1142-B206-4DEE-3D1FB43A72D6">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>BOOK_LABELS</sourceObjSchema>
+<sourceObjName>ID</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>16 BYTE</dataTypeSize>
+<ownDataTypeParameters>16 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="LABEL" id="24460A17-2414-C09E-0189-2C3552CBD74A">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>BOOK_LABELS</sourceObjSchema>
+<sourceObjName>LABEL</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>32 BYTE</dataTypeSize>
+<ownDataTypeParameters>32 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+</Table>

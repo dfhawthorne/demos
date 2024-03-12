@@ -1,0 +1,37 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<SnapshotOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.SnapshotOraclev11g" name="BOOK_LABELS" directorySegmentName="seg_0" id="BD1861E5-793C-9085-BF22-780EBACB3268">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>DB_BOOKS</sourceObjSchema>
+<sourceObjName>BOOK_LABELS</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<schemaObject>0DA39B44-6EFB-1BF5-2822-D33A875C24B8</schemaObject>
+<action>ON DEMAND</action>
+<defaultSegment>NO</defaultSegment>
+<refresh>YES</refresh>
+<refreshType>FORCE</refreshType>
+<subquery><![CDATA[SELECT
+      l.ID,
+      l.label
+  FROM
+    database_bookshelf_ext e,
+  XMLTABLE (
+    'for $i in /books/book/labels/label
+      return <row>
+        {
+          $i/../../id,
+          $i
+        }
+      </row>'
+    PASSING xmltype(e.object_value)
+    COLUMNS
+      "ID" VARCHAR2(16) PATH 'id',
+      label VARCHAR2(32) PATH 'label'
+    ) l]]></subquery>
+<subqueryChanged>false</subqueryChanged>
+<subqueryNeedsMigration>false</subqueryNeedsMigration>
+<tablespace>54A180D1-9454-F3FE-6942-1AB8E4B48BBB</tablespace>
+<useIndex>YES</useIndex>
+<with></with>
+</SnapshotOraclev11g>

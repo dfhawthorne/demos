@@ -1,0 +1,79 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="46EE3827-87F1-D221-10AA-02002B89354F" name="BOOK CONTRIBUTORS">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:16:05 UTC</createdTime>
+<generatorID>4B3A56D4-5088-1268-240A-BAD97CBBA246</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<typeID>4</typeID>
+<adequatelyNormalized>NO</adequatelyNormalized>
+<expectedVolumes>0</expectedVolumes>
+<fwdEngineeringStrategyName>Single Table</fwdEngineeringStrategyName>
+<growthPercent>0</growthPercent>
+<growthType>Year</growthType>
+<maxVolumes>9999999</maxVolumes>
+<minVolumes>0</minVolumes>
+<normalForm>Third</normalForm>
+<attributes itemClass="oracle.dbtools.crest.model.design.logical.Attribute">
+<Attribute name="ID" id="8148165A-9223-0F1D-9F8A-D9D2756539C5">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:16:05 UTC</createdTime>
+<generatorID>53DFB87D-4538-CD27-96F2-D21B94ECB163</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>32 BYTE</dataTypeSize>
+<ownDataTypeParameters>32 BYTE,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="CONTRIBUTOR" id="1E3D08F8-86C1-3D59-B6A0-1524AB508076">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:16:05 UTC</createdTime>
+<generatorID>E303C954-E680-EF24-DE8B-B7A10FC55CB9</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>64 BYTE</dataTypeSize>
+<ownDataTypeParameters>64 BYTE,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="ID1" id="E0769328-BFA4-1941-3A68-71183C89DE6A">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:19:43 UTC</createdTime>
+<generatorID>EEC22957-4824-583B-022C-757DD2C9E38D</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<referedAttribute>A385E36D-44F8-9CA5-0F14-FF17EF9E2DB1</referedAttribute>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>16 BYTE</dataTypeSize>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+</attributes>
+<identifiers itemClass="oracle.dbtools.crest.model.design.logical.CandidateKey">
+<identifier id="FAAAAF5E-771B-A930-AD17-C35FFFA44FD2" name="BOOK CONTRIBUTORS PK">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:18:43 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<pk>true</pk>
+<usedAttributes>
+<attributeRef>8148165A-9223-0F1D-9F8A-D9D2756539C5</attributeRef>
+<attributeRef>1E3D08F8-86C1-3D59-B6A0-1524AB508076</attributeRef>
+</usedAttributes>
+</identifier>
+</identifiers>
+</Entity>

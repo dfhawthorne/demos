@@ -1,0 +1,29 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev20c class="oracle.dbtools.crest.model.design.storage.oracle.v20c.TableProxyOraclev20c" name="BOOK_LABELS" directorySegmentName="seg_0" id="3449EDED-2FD5-4F92-09DB-941A1D029AAD">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<schemaObject>0DA39B44-6EFB-1BF5-2822-D33A875C24B8</schemaObject>
+<logging>YES</logging>
+<materializedQueryTable>true</materializedQueryTable>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>4F24B20C-0E5D-070E-FE67-F9E678884F3D</segment>
+<materializedView>BD1861E5-793C-9085-BF22-780EBACB3268</materializedView>
+<tableSpace>54A180D1-9454-F3FE-6942-1AB8E4B48BBB</tableSpace>
+<temporaryChanged>false</temporaryChanged>
+<accessDriverType>oracle_loader</accessDriverType>
+<rejectLimit></rejectLimit>
+<inMemory>NO</inMemory>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="LABEL" id="24460A17-2414-C09E-0189-2C3552CBD74A">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="ID" id="773D43DE-1142-B206-4DEE-3D1FB43A72D6">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+</TableProxyOraclev20c>

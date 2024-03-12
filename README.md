@@ -40,3 +40,7 @@ Will follow up comments with an expanded demonstration.
 
 Demonstrated the case of the `V$SESSION` view returning no rows. Final report published
 [here](https://yaocm.wordpress.com/2019/04/13/technical-note-on-vsession-is-producing-wrong-results-for-non-sys-users/).
+
+### Demonstration of Loading Database Bookshelf into XE Database
+
+[Demonstration of Loading Database Bookshelf into XE Database](https://github.com/dfhawthorne/demos/wiki/database_bookshelf_xml)

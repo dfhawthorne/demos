@@ -1,0 +1,67 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="4B3A56D4-5088-1268-240A-BAD97CBBA246" schemaObject="0DA39B44-6EFB-1BF5-2822-D33A875C24B8" name="BOOK_CONTRIBUTORS">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>DB_BOOKS</sourceObjSchema>
+<sourceObjName>BOOK_CONTRIBUTORS</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<typeID>4</typeID>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<materializedQueryTable>true</materializedQueryTable>
+<parsed>true</parsed>
+<userDefinedSQL><![CDATA[SELECT
+      "ID",
+      contributor
+  FROM
+    TABLE (
+      contributor_pkg.get_contributor(
+        CURSOR(
+          SELECT
+              c.*
+            FROM
+              database_bookshelf_ext e,
+              XMLTABLE(
+                '/books/book'
+                PASSING xmltype(e.object_value)
+                COLUMNS
+                  "ID" VARCHAR2(32) PATH 'id',
+                  contributors VARCHAR2(1024) PATH 'contributor'
+              ) c
+        )
+      )
+    )]]></userDefinedSQL>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="ID" id="53DFB87D-4538-CD27-96F2-D21B94ECB163">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>BOOK_CONTRIBUTORS</sourceObjSchema>
+<sourceObjName>ID</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>32 BYTE</dataTypeSize>
+<ownDataTypeParameters>32 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="CONTRIBUTOR" id="E303C954-E680-EF24-DE8B-B7A10FC55CB9">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjSchema>BOOK_CONTRIBUTORS</sourceObjSchema>
+<sourceObjName>CONTRIBUTOR</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:05 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>64 BYTE</dataTypeSize>
+<ownDataTypeParameters>64 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+</Table>
