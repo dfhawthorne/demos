@@ -1,0 +1,96 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="20713755-F1F1-4E24-20FF-0696B5913180" name="book">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:18:29 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<adequatelyNormalized>NO</adequatelyNormalized>
+<expectedVolumes>0</expectedVolumes>
+<fwdEngineeringStrategyName>Single Table</fwdEngineeringStrategyName>
+<growthPercent>0</growthPercent>
+<growthType>Year</growthType>
+<maxVolumes>9999999</maxVolumes>
+<minVolumes>0</minVolumes>
+<normalForm>Third</normalForm>
+<attributes itemClass="oracle.dbtools.crest.model.design.logical.Attribute">
+<Attribute name="id" id="1ADD39A7-4D7C-EF17-BC57-9AAC3381CB33">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:18:43 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="url" id="2CA0B967-F753-FCAD-92BB-DFD2DB3AC5ED">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:18:44 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="title" id="096ACFE3-A0BE-7F9F-B321-5048F87A9062">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:38:06 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="contributor" id="00786023-DA0B-5757-600E-7D7D3B6EDA11">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:18:45 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="list_title" id="B852F5DD-2DFF-C173-96DB-F1B386841B6D">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:21:40 UTC</createdTime>
+<generatorID>8A029EF3-C4B1-DB21-82CD-0A5CCE4EACCE</generatorID>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<referedAttribute>39B24B0A-995D-C9BA-A7D3-2158AEF79B3B</referedAttribute>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+</attributes>
+<identifiers itemClass="oracle.dbtools.crest.model.design.logical.CandidateKey">
+<identifier id="F3F1CB6D-ED02-AC24-6812-77FE86AEEB6B" name="book PK">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:19:14 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<pk>true</pk>
+<usedAttributes>
+<attributeRef>1ADD39A7-4D7C-EF17-BC57-9AAC3381CB33</attributeRef>
+</usedAttributes>
+</identifier>
+</identifiers>
+</Entity>

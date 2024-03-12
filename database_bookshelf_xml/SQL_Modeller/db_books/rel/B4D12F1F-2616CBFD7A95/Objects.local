@@ -1,0 +1,7 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="SchemaObject" objectID="0DA39B44-6EFB-1BF5-2822-D33A875C24B8" name="DB_BOOKS" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.relational.SchemaObject" propertyParentId="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" propertySourceId="" propertyTargetId=""/>
+   <object objectType="Table" objectID="4B3A56D4-5088-1268-240A-BAD97CBBA246" name="BOOK_CONTRIBUTORS" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.relational.Table" propertyParentId="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" propertySourceId="" propertyTargetId=""/>
+   <object objectType="Table" objectID="3449EDED-2FD5-4F92-09DB-941A1D029AAD" name="BOOK_LABELS" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.relational.Table" propertyParentId="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" propertySourceId="" propertyTargetId=""/>
+   <object objectType="Table" objectID="9AD53795-5408-A46C-AFEE-1CEDDD396CA2" name="BOOKS" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.relational.Table" propertyParentId="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" propertySourceId="" propertyTargetId=""/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

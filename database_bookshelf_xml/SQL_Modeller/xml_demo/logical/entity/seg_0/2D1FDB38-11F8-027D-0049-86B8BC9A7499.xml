@@ -1,0 +1,59 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="2D1FDB38-11F8-027D-0049-86B8BC9A7499" name="label">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:23:33 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<adequatelyNormalized>NO</adequatelyNormalized>
+<expectedVolumes>0</expectedVolumes>
+<fwdEngineeringStrategyName>Single Table</fwdEngineeringStrategyName>
+<growthPercent>0</growthPercent>
+<growthType>Year</growthType>
+<maxVolumes>9999999</maxVolumes>
+<minVolumes>0</minVolumes>
+<normalForm>Third</normalForm>
+<attributes itemClass="oracle.dbtools.crest.model.design.logical.Attribute">
+<Attribute name="label" id="3C5678C1-4DFD-3A4C-0DBD-E19131F96A39">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:23:42 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="id" id="C48CC75C-AAE4-B907-1CF0-91609367F4EE">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:26:15 UTC</createdTime>
+<generatorID>7FAAAD59-08B2-7B9D-C031-A7FE6F8C5B8B</generatorID>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<referedAttribute>1ADD39A7-4D7C-EF17-BC57-9AAC3381CB33</referedAttribute>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+</attributes>
+<identifiers itemClass="oracle.dbtools.crest.model.design.logical.CandidateKey">
+<identifier id="91486BF6-9A6C-5C1E-8BBA-B36EAD9FE5EC" name="label PK">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-09 12:26:08 UTC</createdTime>
+<ownerDesignName>xml_demo</ownerDesignName>
+<engineerTo>
+<item key="24AB6FF4-0510-E843-936D-F64705D809F2" value="true"/>
+</engineerTo>
+<pk>true</pk>
+<usedAttributes>
+<attributeRef>3C5678C1-4DFD-3A4C-0DBD-E19131F96A39</attributeRef>
+</usedAttributes>
+</identifier>
+</identifiers>
+</Entity>

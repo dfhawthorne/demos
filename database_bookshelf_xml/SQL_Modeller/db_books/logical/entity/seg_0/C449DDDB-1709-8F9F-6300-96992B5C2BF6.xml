@@ -1,0 +1,92 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="C449DDDB-1709-8F9F-6300-96992B5C2BF6" name="BOOKS">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:16:05 UTC</createdTime>
+<generatorID>9AD53795-5408-A46C-AFEE-1CEDDD396CA2</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<typeID>4</typeID>
+<adequatelyNormalized>NO</adequatelyNormalized>
+<expectedVolumes>0</expectedVolumes>
+<fwdEngineeringStrategyName>Single Table</fwdEngineeringStrategyName>
+<growthPercent>0</growthPercent>
+<growthType>Year</growthType>
+<maxVolumes>9999999</maxVolumes>
+<minVolumes>0</minVolumes>
+<normalForm>Third</normalForm>
+<attributes itemClass="oracle.dbtools.crest.model.design.logical.Attribute">
+<Attribute name="ID" id="A385E36D-44F8-9CA5-0F14-FF17EF9E2DB1">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:16:05 UTC</createdTime>
+<generatorID>42ADF494-E7F1-CF97-BE80-642BA086A674</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>16 BYTE</dataTypeSize>
+<ownDataTypeParameters>16 BYTE,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="TITLE" id="743E5A9F-DCE9-8918-D387-2927C4FC1BF0">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:16:05 UTC</createdTime>
+<generatorID>CF39B7EC-FEC5-2FB1-F494-FC23D15138BD</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>1024 BYTE</dataTypeSize>
+<ownDataTypeParameters>1024 BYTE,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="URL" id="0F5750F1-7921-4241-40FF-5FD457D3B96E">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:16:05 UTC</createdTime>
+<generatorID>EE4B739A-8D73-B115-5880-8627E63078E9</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>512 BYTE</dataTypeSize>
+<ownDataTypeParameters>512 BYTE,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="ISBN" id="EEB5BA9D-FD11-3F54-3E6C-F8F2C30F6742">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:16:05 UTC</createdTime>
+<generatorID>25413625-91FB-6307-B0C4-7D0B838E75AA</generatorID>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>16 BYTE</dataTypeSize>
+<ownDataTypeParameters>16 BYTE,,</ownDataTypeParameters>
+</Attribute>
+</attributes>
+<identifiers itemClass="oracle.dbtools.crest.model.design.logical.CandidateKey">
+<identifier id="B9F58AA1-5F7E-4ECA-CAA1-8B47F081659A" name="BOOKS PK">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:18:00 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<engineerTo>
+<item key="B4D12F1F-982A-43F7-9AC5-2616CBFD7A95" value="true"/>
+</engineerTo>
+<pk>true</pk>
+<usedAttributes>
+<attributeRef>A385E36D-44F8-9CA5-0F14-FF17EF9E2DB1</attributeRef>
+</usedAttributes>
+</identifier>
+</identifiers>
+</Entity>

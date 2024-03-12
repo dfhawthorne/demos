@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<RoleOraclev10g class="oracle.dbtools.crest.model.design.storage.oracle.v10g.RoleOraclev10g" name="DB_BOOKS" directorySegmentName="seg_0" id="CE3EF2D8-A599-9148-A6A7-1EA36E5614C5">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjName>DB_BOOKS</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:12 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<permissions>
+<Permission class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PermissionsOraclev10g" name="Permissions1" id="9272CC0D-5F1E-0545-EDC6-87754D6F50E8">
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:12 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<privileges>READ, WRITE</privileges>
+<directoryOracle>2FF1CB36-3158-239E-38F4-4DF47D0DA149</directoryOracle>
+</Permission>
+</permissions>
+</RoleOraclev10g>

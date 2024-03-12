@@ -1,0 +1,8 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.logical.LogicalDesign>
+   <object objectType="Entity" objectID="46EE3827-87F1-D221-10AA-02002B89354F" name="BOOK CONTRIBUTORS" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.logical.Entity" propertyParentId="93F00F80-4465-632F-A5B4-BFF909F41BB2" propertySourceId="" propertyTargetId=""/>
+   <object objectType="Entity" objectID="E91FD894-F742-0713-B385-EC87EAF7E8EB" name="BOOK LABELS" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.logical.Entity" propertyParentId="93F00F80-4465-632F-A5B4-BFF909F41BB2" propertySourceId="" propertyTargetId=""/>
+   <object objectType="Entity" objectID="C449DDDB-1709-8F9F-6300-96992B5C2BF6" name="BOOKS" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.logical.Entity" propertyParentId="93F00F80-4465-632F-A5B4-BFF909F41BB2" propertySourceId="" propertyTargetId=""/>
+   <object objectType="Relation" objectID="04BCDC33-BA31-BE9D-0B2C-7033E66D6ED3" name="Relation_3" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.logical.Relation" propertyParentId="93F00F80-4465-632F-A5B4-BFF909F41BB2" propertySourceId="C449DDDB-1709-8F9F-6300-96992B5C2BF6" propertyTargetId="E91FD894-F742-0713-B385-EC87EAF7E8EB"/>
+   <object objectType="Relation" objectID="EEC22957-4824-583B-022C-757DD2C9E38D" name="Relation_4" seqName="seg_0" propertyClassName="oracle.dbtools.crest.model.design.logical.Relation" propertyParentId="93F00F80-4465-632F-A5B4-BFF909F41BB2" propertySourceId="C449DDDB-1709-8F9F-6300-96992B5C2BF6" propertyTargetId="46EE3827-87F1-D221-10AA-02002B89354F"/>
+</oracle.dbtools.crest.model.design.logical.LogicalDesign>

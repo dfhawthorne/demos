@@ -1,0 +1,9 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<DirectoryOraclev10g class="oracle.dbtools.crest.model.design.storage.oracle.v10g.DirectoryOraclev10g" name="XML_DIR" directorySegmentName="seg_0" id="2FF1CB36-3158-239E-38F4-4DF47D0DA149">
+<sourceConnName>xe_db_books</sourceConnName>
+<sourceObjName>XML_DIR</sourceObjName>
+<createdBy>PC</createdBy>
+<createdTime>2024-03-12 12:14:04 UTC</createdTime>
+<ownerDesignName>db_books</ownerDesignName>
+<dirPath>/opt/oracle/xml</dirPath>
+</DirectoryOraclev10g>
