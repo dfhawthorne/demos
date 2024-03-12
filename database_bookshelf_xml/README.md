@@ -2,7 +2,7 @@
 
 ## Ansible
 
-This folder (`ansible`) contains the Ansible playbook, `setup_demo_env.yml`, which builds the demonstration schema as described in [Demonstration of Loading Database Bookshelf into XE Database](https://github.com/dfhawthorne/demos/wiki/database_bookshelf_xml). To invoke this playbook, you must:
+This folder (`ansible`) contains the Ansible playbook, `setup_demo_env.yml`, which builds the demonstration schema as described in [Demonstration of Loading Database Bookshelf into XE Database]([Demonstration of Loading Database Bookshelf into XE Database](https://github.com/dfhawthorne/demos/wiki/Using-XML-in-Oracle-DB-for-Google-Books)). To invoke this playbook, you must:
 
 1. Install [Ansible](https://www.ansible.com/)
 1. Install [Oracle XE](https://docs.oracle.com/en/database/oracle/oracle-database/21/xeinl/installing-oracle-database-free.html#GUID-728E4F0A-DBD1-43B1-9837-C6A460432733). I have created an Ansible playbook for installing Oracle XE, [install_XE_database.yml](https://github.com/dfhawthorne/oracle-db-build/blob/main/install_XE_database.yml), in my [oracle-db-build](https://github.com/dfhawthorne/oracle-db-build) GIT repository.
